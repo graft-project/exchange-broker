@@ -1,7 +1,7 @@
 # Exchange-broker
 ## **GRAFT Exchange Broker**
 
-**Exchange Broker** - a GRAFT protocol extension hosted on a supernode or a group of supernodes and hosted by the supernode operator. Exchange broker temporary implements special additional features that cannot be automatically executed by a fully decentralized network and/or require special regulation framework.
+**_Exchange Broker_** - a GRAFT protocol extension hosted on a supernode or a group of supernodes and hosted by the supernode operator. Exchange broker temporary implements special additional features that cannot be automatically executed by a fully decentralized network and/or require special regulation framework.
 
 **_Hardware / Systems Requirement: Minimum hardware requirements include:_**
  
@@ -31,11 +31,11 @@ _Note:_ In order to GraftNode (also called the cryptonode) work properly 28680 (
 # Install Prerequisites
 
 
-1. Install **git** (if not installed already):
+### 1. Install **git** (if not installed already):
 ```
   sudo apt-get install -y git
 ```
-2. Install **.Net Core 2.1 SDK** :
+### 2. Install **.Net Core 2.1 SDK** :
 
 >**_You don`t need this step if you created this folder for Payment Gateway_**
 
@@ -52,7 +52,7 @@ sudo apt-get install apt-transport-https
 sudo apt-get update
 sudo apt-get install dotnet-sdk-2.1
 ```
-3.   Install **Mysql server** for your platform :
+### 3. Install **Mysql server** for your platform :
 
 >**_If database was installed for Payment Gateway you need doing only command marked bold._**
 
@@ -146,8 +146,8 @@ Include MySQL to  autorun:
 ```
 sudo systemctl enable mysql 
 ```
-4.   **Nginx** setup
->**_If nginx was installed for Payment Gateway you need doing only command marked orange color. _**
+### 4.   **Nginx** setup
+>**_ If nginx was installed for Payment Gateway you need doing only command marked orange color. _**
 
 4.1. Install nginx
 ```
@@ -256,7 +256,7 @@ sudo systemctl restart nginx
 
 # Installation
 
-5. Install **Exchange Broker**:
+### 5. Install **Exchange Broker**:
 
 Create a folder to store the sources (for example src) and clone the repositories into this folder:
 
@@ -285,7 +285,7 @@ _For example:_
 dotnet publish  -c release -v d -o "/home/ubuntu/graft/eb" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
 ```
 
-6. Download Geth Node (optional, to support Ethereum):
+### 6. Download Geth Node (optional, to support Ethereum):
 
 Download binary code Geth Node from (https://github.com/ethereum/go-ethereum/releases) :
 
@@ -303,13 +303,13 @@ wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.8.20-24d7
 tar -xvf geth-linux-amd64-1.8.20-24d727b6.tar.gz
 ```
 
-7.  Download and Build  Graft Node : 
+### 7.  Download and Build  Graft Node : 
 
 You have to do it with (https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction)
 
 > Build Graft Supernode - >Graft Node Configuration -> Graft SuperNode configuration 
 
-8. Configure settings:
+### 8. Configure settings:
 
 All settings related to the  application stored in the config file ‘appsettings.json’ located in the root bin directory, 
 _for example,_ "/home/ubuntu/graft/eb".
@@ -419,7 +419,7 @@ where:
 
 >**_Note: your <graft-wallet-name> should contain funds to enable graft payouts_**
 
-9. Install **Exchange Broker**:
+### 9. Install **Exchange Broker**:
 
 9.1.  Go to Exchange broker source directory:
 
@@ -439,7 +439,7 @@ dotnet publish -v d -o "<your-path-to-publish>" --framework netcoreapp2.1 --runt
 ```
 dotnet ef database update
 ```
-10. Run Exchange Broker:
+### 10. Run Exchange Broker:
 
 10.1. Run Geth Node (for Ethereum) :
 ```
@@ -501,7 +501,7 @@ cd /home/ubuntu/graft/eb
 After that Exchange Broker should be ready to accept transactions.
 
 
-** 11. Verify Installation**
+### 11. Verify Installation
 
 
 11.1.  Open the link https://**name of your site**/DemoTerminalApp
@@ -519,12 +519,14 @@ _For example:_
 Pic.1
 
 11.3. Make sure the Bitcoin currency is selected (pic.1, [1]) and click the "Pay" button (pic.1, [2])
+
 11.4. You should see the screen (pic.2):
 
 ![2019-01-15_14-04-37](https://user-images.githubusercontent.com/45132833/51415728-818feb00-1b7f-11e9-96e7-e75ff599e3d3.png)
 Pic.2
 
 11.5. Make sure the cup of coffee- $1 is selected (pic.2, [1]) and click the "Pay" button (pic.2, [2])
+
 11.6. You should see the screen (pic.3):
 
 ![2019-01-15_20-04-52](https://user-images.githubusercontent.com/45132833/51415885-18f53e00-1b80-11e9-93a7-7ef659be30a5.png)
@@ -543,8 +545,11 @@ Pic.4
 Pic.5
 
 11.9. information about transaction is displayed on the down side of the screen (pic.5, [2])
+
 11.10. Open your bitcoin wallet, scan qr-code (pic.5, [1]) and pay this payment.
+
 11.11. Wait for transferring  transaction. If transaction is sended:
+
  you will see info about successful completed transaction on the screen of your PC/laptop (pic.6):
 
 ![ok_1](https://user-images.githubusercontent.com/45132833/51415905-23173c80-1b80-11e9-8308-3fb563f7bd29.png)
@@ -559,7 +564,7 @@ Pic.7
 11.12. You have a successful result if money from your bitcoin wallet send to your graft wallet.
 
 
-**12. Probable errors list:**
+### 12. Probable errors list:
 
 **_Error # 1_**
 
