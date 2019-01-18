@@ -527,5 +527,27 @@ Pic.2
 11.5. Make sure the cup of coffee- $1 is selected (pic.2, [1]) and click the "Pay" button (pic.2, [2])
 11.6. You should see the screen (pic.3):
 
+![2019-01-15_20-04-52](https://user-images.githubusercontent.com/45132833/51415885-18f53e00-1b80-11e9-93a7-7ef659be30a5.png)
+Pic.3
+
+11.7. Enter address of GRAFT Wallet, which will get payment, in the field (pic.3,[1]) and press button (pic.3,[2])
+>**_Note: field “Wallet address” (pic.3,[1]) has a red border  if  wallet address is incorrect.
+Field “Wallet address” (pic.4) has a blue border  if  wallet address is correct:_**
+
+
+11.8. You should see the screen (pic.5):
+
+![2019-01-15_21-39-03](https://user-images.githubusercontent.com/45132833/51415901-1c88c500-1b80-11e9-8f45-a56ae2b94035.png)
+Pic.5
+
+11.9. information about transaction is displayed on the down side of the screen (pic.5, [2])
+11.10. Open your bitcoin wallet, scan qr-code (pic.5, [1]) and pay this payment.
+11.11. Wait for transferring  transaction. If transaction is sended:
+ you will see info about successful completed transaction on the screen of your PC/laptop (pic.6):
+
+![ok_1](https://user-images.githubusercontent.com/45132833/51415905-23173c80-1b80-11e9-8308-3fb563f7bd29.png)
+Pic.6
+
+You will see info about successful sended transaction on the screen of your Wallet (pic.7) and late you will receive info about completed transaction:
 
 
