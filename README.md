@@ -147,7 +147,7 @@ Include MySQL to  autorun:
 sudo systemctl enable mysql 
 ```
 ### 4.   **Nginx** setup
->**_ If nginx was installed for Payment Gateway you need doing only command marked orange color. _**
+> **_If nginx was installed for Payment Gateway you need doing only command marked bold._**
 
 4.1. Install nginx
 ```
@@ -165,7 +165,7 @@ sudo systemctl start nginx
 ```
 sudo systemctl enable nginx
 ```
-4.5.  Creating Self-signed Certificates:
+**4.5.  Creating Self-signed Certificates:**
 ```
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/<name+domain name >.key -out /etc/ssl/certs/eb-test.graft.network.crt
 ```
@@ -181,7 +181,7 @@ While we are using OpenSSL, we should also create a strong Diffie-Hellman group,
 ```
 sudo openssl dhparam -out /etc/nginx/ssl/dh2048.pem 2048
 ```
-4.6. Make configuration files for <name> in nginx:
+**4.6. Make configuration files for <name> in nginx:**
 ```
 Go to /etc/nginx/conf.d:
 cd /etc/nginx/conf.d
@@ -249,7 +249,7 @@ server {
 ```
 After that, press Ctrl-X and Y and ENTER
 
-4.7.  Restart nginx:
+**4.7.  Restart nginx:**
 ```
 sudo systemctl restart nginx 
 ```
