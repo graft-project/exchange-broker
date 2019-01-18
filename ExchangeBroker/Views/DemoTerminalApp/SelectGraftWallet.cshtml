@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewData["Title"] = "SelectGraftWallet";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="google" value="notranslate">
+    <title>Graft Terminal Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <link rel='stylesheet' href='~/css/style.css' type='text/css' media='all' />
+</head>
+<body>
+    <div class='maindisplay black'>
+
+        <div class='caption'>
+            Graft Wallet Address
+        </div>
+
+        <div class='blacksection'>
+            <table>
+
+                <tr>
+                    <td>Wallet address *:</td>
+                    <td><input id="address" type='text' pattern="[A-Za-z0-9]{95}" maxlength=95 required></td>
+                </tr>
+                <tr>
+                    <td colspan=2>
+                        <center>
+                            <small>
+                                <br>
+                                For the purposes of the emulator GRFT is used as payout currency. This preference along with the address are normally part of the merchant account configuration. GRFT Payout settlement may take up to 15 minutes.
+                                <br><br>
+                                <button id=b1>Proceed</button>
+                                <a href="@Url.Action("SelectCurrency","DemoTerminalApp")"><button class="cancelbut">Cancel</button></a>
+                            </small>
+                        </center>
+                    </td>
+                </tr>
+            </table>
+
+
+        </div>
+    </div>
+
+    <script>
+        function Navigate() {
+
+            var value = document.getElementById("address").value;
+
+            if (value.length > 0) {
+
+                var action = '@Url.Action("QrCode", "DemoTerminalApp")';
+
+                window.location.href = action +
+                    "?price=" + encodeURI(@ViewData["price"]) +
+                    "&wallet=" + encodeURI(value) +
+                    "&currencyType=" + encodeURI("@ViewData["currencyType"]");
+            }
+        }
+
+        document.getElementById("b1").addEventListener("click", function () { Navigate(); }, false);
+    </script>
+
+
+</body>
+</html>
+

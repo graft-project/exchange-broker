@@ -1,0 +1,311 @@
+﻿using ExchangeBroker.Data;
+using ExchangeBroker.Models;
+using ExchangeBroker.Services;
+using Graft.Infrastructure;
+using Graft.Infrastructure.Broker;
+using Graft.Infrastructure.Models;
+using Graft.Infrastructure.Rate;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+
+namespace ExchangeBroker.Controllers.Api
+{
+    [Route("v1.0")]
+    [ApiController]
+    public class ApiPaymentsController : ControllerBase
+    {
+        readonly ILogger logger;
+        readonly ApplicationDbContext db;
+        readonly RateCache rateCache;
+        readonly IMemoryCache cache;
+        readonly IBitcoinService bitcoinService;
+        readonly IGraftWalletService wallet;
+
+        public ApiPaymentsController(ILoggerFactory loggerFactory,
+            ApplicationDbContext db,
+            RateCache rateCache,
+            IMemoryCache cache,
+            IBitcoinService bitcoinService,
+            IGraftWalletService wallet)
+        {
+            this.logger = loggerFactory.CreateLogger(nameof(ApiPaymentsController));
+            this.db = db;
+            this.rateCache = rateCache;
+            this.cache = cache;
+            this.bitcoinService = bitcoinService;
+            this.wallet = wallet;
+        }
+
+        [HttpPost]
+        [Route("Exchange")]
+        public async Task<ActionResult<BrokerExchangeResult>> Exchange([FromBody] BrokerExchangeParams model)
+        {
+            logger.LogInformation("API Exchange: {@params}", model);
+
+            if (!string.IsNullOrWhiteSpace(model.FiatCurrency))
+            {
+                if (model.BuyFiatAmount <= 0 && model.SellFiatAmount <= 0) return Error(ErrorCode.FiatAmountEmpty);
+                if (model.SellFiatAmount > 0 && model.BuyFiatAmount > 0) return Error(ErrorCode.OnlyOneAmountAllowed);
+                if (model.SellAmount > 0 || model.BuyAmount > 0) return Error(ErrorCode.OnlyOneAmountAllowed);
+            }
+            else
+            {
+                if (model.SellAmount > 0 && model.BuyAmount > 0) return Error(ErrorCode.OnlyOneAmountAllowed);
+                if (model.SellAmount <= 0 && model.BuyAmount <= 0) return Error(ErrorCode.InvalidAmount);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.SellCurrency)) return Error(ErrorCode.SellCurrencyEmpty);
+            if (!rateCache.IsSupported(model.SellCurrency)) return Error(ErrorCode.SellCurrencyNotSupported, model.SellCurrency);
+
+            if (string.IsNullOrWhiteSpace(model.BuyCurrency)) return Error(ErrorCode.BuyCurrencyEmpty);
+            if (model.BuyCurrency != "GRFT") return Error(ErrorCode.BuyCurrencyNotSupported, model.BuyCurrency);
+
+            if (string.IsNullOrWhiteSpace(model.WalletAddress)) return Error(ErrorCode.WalletEmpty);
+
+            Exchange exchange = await ExchangeCalculator.Create(model, rateCache);
+
+            bitcoinService.CreateAddress(exchange);
+
+            cache.Set(exchange.ExchangeId, exchange, DateTimeOffset.Now.AddMinutes(AppConfig.PaymentTimeoutMinutes));
+
+            db.Exchange.Add(exchange);
+            await db.SaveChangesAsync();
+
+            // return result
+            var res = GetExchangeResult(exchange);
+            logger.LogInformation("API Exchange Result: {@params}", res);
+            return Ok(res);
+        }
+
+        [HttpPost]
+        [Route("Sale")]
+        public async Task<ActionResult<BrokerSaleResult>> Sale([FromBody] BrokerSaleParams model)
+        {
+            logger.LogInformation("API Sale: {@params}", model);
+
+            if (model.SaleAmount <= 0) return Error(ErrorCode.InvalidAmount);
+
+            if (string.IsNullOrWhiteSpace(model.SaleCurrency)) return Error(ErrorCode.SaleCurrencyEmpty);
+            if (model.SaleCurrency != "USD") return Error(ErrorCode.SaleCurrencyNotSupported, model.SaleCurrency);
+
+            if (string.IsNullOrWhiteSpace(model.PayCurrency)) return Error(ErrorCode.PayCurrencyEmpty);
+            if (!rateCache.IsSupported(model.PayCurrency)) return Error(ErrorCode.PayCurrencyNotSupported, model.PayCurrency);
+
+            if (model.ServiceProviderFee < 0 || model.ServiceProviderFee > AppConfig.MaxServiceProviderFee) return Error(ErrorCode.InvalidServiceProviderFee);
+            if (model.ServiceProviderFee > 0 && string.IsNullOrWhiteSpace(model.ServiceProviderWallet)) return Error(ErrorCode.ServiceProviderWalletEmpty);
+
+            if (string.IsNullOrWhiteSpace(model.MerchantWallet)) return Error(ErrorCode.MerchantWalletEmpty);
+
+            // payment calculation
+            var btcRate = await rateCache.GetRateToUsd(model.PayCurrency);
+            var graftRate = await rateCache.GetRateToUsd("GRFT");
+
+            var btcAmount = model.SaleAmount / btcRate;
+            var graftAmount = model.SaleAmount / graftRate;
+
+            var serviceProviderFee = graftAmount * (decimal)model.ServiceProviderFee;
+            var exchangeBrokerFee = graftAmount * AppConfig.ExchangeBrokerFee;
+
+            var merchantAmount = graftAmount - serviceProviderFee - exchangeBrokerFee;
+
+            var payment = new Payment
+            {
+                PaymentId = Guid.NewGuid().ToString(),
+                CreatedAt = DateTime.UtcNow,
+                Status = PaymentStatus.Waiting,
+
+                SaleAmount = model.SaleAmount,
+                SaleCurrency = model.SaleCurrency,
+
+                PayToSaleRate = btcRate,
+                GraftToSaleRate = graftRate,
+
+                PayCurrency = model.PayCurrency,
+                PayAmount = btcAmount,
+
+                ServiceProviderFee = serviceProviderFee,
+                ExchangeBrokerFee = exchangeBrokerFee,
+                MerchantAmount = merchantAmount,
+
+                ServiceProviderWallet = model.ServiceProviderWallet,
+                MerchantWallet = model.MerchantWallet,
+
+                MerchantTransactionStatus = GraftTransactionStatus.New,
+                ProviderTransactionStatus = GraftTransactionStatus.New
+            };
+
+            bitcoinService.CreateAddress(payment);
+
+            cache.Set(payment.PaymentId, payment, DateTimeOffset.Now.AddMinutes(AppConfig.PaymentTimeoutMinutes));
+
+            db.Payment.Add(payment);
+            await db.SaveChangesAsync();
+
+            // return result
+            var res = GetSaleResult(payment);
+            logger.LogInformation("API Sale Result: {@params}", res);
+            return Ok(res);
+        }
+
+        [HttpPost]
+        [Route("SaleStatus")]
+        public async Task<ActionResult<BrokerSaleStatusResult>> SaleStatus([FromBody] BrokerSaleStatusParams model)
+        {
+            logger.LogInformation("API SaleStatus: {@params}", model);
+
+            if (string.IsNullOrEmpty(model.PaymentId)) return Error(ErrorCode.PaymentIdEmpty);
+
+            cache.TryGetValue(model.PaymentId, out Payment payment);
+            if (payment == null)
+            {
+                payment = await db.Payment.FirstOrDefaultAsync(t => t.PaymentId == model.PaymentId);
+                if (payment == null)
+                    return Error(ErrorCode.PaymentNotFoundOrExpired);
+            }
+
+            await bitcoinService.CheckPayment(payment);
+
+            if (payment.Status == PaymentStatus.Received)
+            {
+                await wallet.ProcessPayment(payment, db);
+            }
+
+            
+            db.Payment.Update(payment);
+            await db.SaveChangesAsync();
+
+            var res = GetSaleStatusResult(payment);
+            logger.LogInformation("API SaleStatus Result: {@params}", res);
+            return Ok(res);
+        }
+
+        [HttpPost]
+        [Route("ExchangeStatus")]
+        public async Task<ActionResult<BrokerExchangeResult>> ExchangeStatus([FromBody] BrokerExchangeStatusParams model)
+        {
+            logger.LogInformation("API ExchangeStatus: {@params}", model);
+
+            if (string.IsNullOrEmpty(model.ExchangeId)) return Error(ErrorCode.ExchangeIdEmpty);
+
+            cache.TryGetValue(model.ExchangeId, out Exchange exchange);
+            if (exchange == null)
+            {
+                exchange = await db.Exchange.FirstOrDefaultAsync(t => t.ExchangeId == model.ExchangeId);
+                if (exchange == null)
+                    return Error(ErrorCode.ExchangeNotFoundOrExpired);
+            }
+
+            await bitcoinService.CheckExchange(exchange);
+
+            if (exchange.Status == PaymentStatus.Received)
+            {
+<<<<<<< HEAD
+                await wallet.ProcessExchange(exchange, db);
+=======
+                ExchangeCalculator.Recalc(exchange);
+
+                wallet.ProcessExchange(exchange, db);
+>>>>>>> ac591ba8fccbb5c581cc2ac84183b4ccfc277204
+
+                // received amount can be different from initial amount, 
+                // so we need to recalculate all amounts
+                //exchange.ReceivedAmount = exchange.SellAmount;
+            }
+
+
+            db.Exchange.Update(exchange);
+            await db.SaveChangesAsync();
+
+            var res = GetExchangeResult(exchange);
+            logger.LogInformation("API ExchangeStatus Result: {@params}", res);
+            return Ok(res); 
+        }
+
+        [HttpGet]
+        [Route("GetParams")]
+        public ActionResult<BrokerParams> GetParams()
+        {
+            var res = new BrokerParams()
+            {
+                Version = AppConfig.Version,
+                Network = AppConfig.NetworkType.ToString(),
+                Fee = AppConfig.ExchangeBrokerFee,
+                Currencies = new string[] { "USD" },
+                Cryptocurrencies = rateCache.GetSupportedCurrencies()
+            };
+
+            logger.LogInformation("API GetParams: {@params}", res);
+            return Ok(res);
+        }
+
+        #region Helpers
+
+        BadRequestObjectResult Error(ErrorCode errorCode, object param = null)
+        {
+            var error = new ApiError(errorCode, param);
+            logger.LogError("API Error ({code}) {message}", error.Code, error.Message);
+            return BadRequest(new ApiErrorResult(error));
+        }
+
+        BrokerSaleResult GetSaleResult(Payment payment)
+        {
+            return new BrokerSaleResult()
+            {
+                PaymentId = payment.PaymentId,
+
+                SaleAmount = payment.SaleAmount,
+                SaleCurrency = payment.SaleCurrency,
+
+                PayToSaleRate = payment.PayToSaleRate,
+                GraftToSaleRate = payment.GraftToSaleRate,
+
+                PayCurrency = payment.PayCurrency,
+                PayAmount = payment.PayAmount,
+
+                ServiceProviderFee = payment.ServiceProviderFee,
+                ExchangeBrokerFee = payment.ExchangeBrokerFee,
+                MerchantAmount = payment.MerchantAmount,
+
+                PayWalletAddress = bitcoinService.GetUri(payment)
+            };
+        }
+
+        BrokerSaleStatusResult GetSaleStatusResult(Payment payment)
+        {
+            return new BrokerSaleStatusResult()
+            {
+                PaymentId = payment.PaymentId,
+                Status = payment.Status
+            };
+        }
+
+
+        BrokerExchangeResult GetExchangeResult(Exchange exchange)
+        {
+            return new BrokerExchangeResult()
+            {
+                ExchangeId = exchange.ExchangeId,
+                Status = exchange.Status,
+
+                SellCurrency = exchange.SellCurrency,
+                SellAmount = exchange.SellAmount,
+
+                BuyCurrency = exchange.BuyCurrency,
+                BuyAmount = exchange.BuyAmount,
+
+                SellToUsdRate = exchange.SellToUsdRate,
+                GraftToUsdRate = exchange.GraftToUsdRate,
+
+                ExchangeBrokerFeeRate = AppConfig.ExchangeBrokerFee,
+                ExchangeBrokerFeeAmount = exchange.ExchangeBrokerFee,
+
+                PayWalletAddress = bitcoinService.GetUri(exchange)
+            };
+        }
+        #endregion
+    }
+}

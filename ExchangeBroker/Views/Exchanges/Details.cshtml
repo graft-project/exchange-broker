@@ -1,0 +1,107 @@
+﻿@model ExchangeBroker.Models.ExchangeViewModels.ExchangeViewModel
+
+@{
+    ViewData["Title"] = "Exchange Details";
+}
+
+<h2>Exchange Details</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreatedAt)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.SellAmount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SellAmount)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.SellCurrency)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SellCurrency)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyAmount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.BuyAmount)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyCurrency)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.BuyCurrency)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.SellToUsdRate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SellToUsdRate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.GraftToUsdRate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.GraftToUsdRate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ExchangeBrokerFee)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ExchangeBrokerFee)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyerWallet)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.BuyerWallet)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PayWalletAddress)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PayWalletAddress)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PayAddressIndex)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PayAddressIndex)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ReceivedConfirmations)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ReceivedConfirmations)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ReceivedAmount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ReceivedAmount)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyerTransactionStatus)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.BuyerTransactionStatus)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ExchangeId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

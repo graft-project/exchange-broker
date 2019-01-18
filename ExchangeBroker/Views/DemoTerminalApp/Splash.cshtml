@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "Splash";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="google" value="notranslate">
+    <title>Graft Terminal Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <meta http-equiv="refresh" content="3;URL=@Url.Action("SelectCurrency","DemoTerminalApp", new { exchangeId = ViewData["exchangeId"], amountInFiat = ViewData["amountInFiat"] } )" />
+    <link href="~/css/style.css" rel="stylesheet"  type='text/css' media='all'  />
+</head>
+<body>
+    <div class='maindisplay'>
+        <img src="~/images/splash.png" class='splashscreen' />
+    </div>
+</body>
+</html>
+

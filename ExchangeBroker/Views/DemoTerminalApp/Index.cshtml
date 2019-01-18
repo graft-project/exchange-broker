@@ -1,0 +1,71 @@
+﻿@{
+    ViewData["Title"] = "Edit";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="google" value="notranslate">
+    <title>GRAFT on Terminal (live demo)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <link rel='stylesheet' href='css/style.css' type='text/css' media='all' />
+</head>
+<body class='mainpage'>
+
+    <div class='terminal'>
+        <iframe class='terminal-frame' src="@Url.Action("Splash", "DemoTerminalApp")" width="648" height="364" align="center" id="mainIframe">
+            You browser not support iframes!
+        </iframe>
+        <br><br>
+        <div class='subframe'>
+            * - The payments are made with real cryptocurrency funds and payouts with real GRFT coin
+            <p>
+                <b style="vertical-align:top;">Current status:</b>
+                <textarea rows="3" cols="150" style="background: transparent; color: white; border: 0 none; outline: none; overflow:hidden"  id="currentStatus">Initialized</textarea>
+            </p>
+        </div>
+        <div class='logo'>
+            <img src='~/images/logo.png'>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script type="text/javascript">
+        var intervalID = -1;
+        var documentID = null;
+
+        function GetStatus() {
+
+            var url = '@Url.Action("GetExchangeStatusMessage", "DemoTerminalApp")';
+
+            try {
+                var id = document.getElementById('mainIframe').contentWindow.document.getElementById('exchangeID').value;
+                if (id != null) {
+                    documentID = id;
+                }
+            }
+            catch (err) { }
+
+            if (documentID != null) {
+                url = url + '?exchangeId=' + documentID;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (recData) {
+                    document.getElementById('currentStatus').innerHTML = recData;
+                    document.getElementById("currentStatus").scrollTop = document.getElementById("currentStatus").scrollHeight
+                },
+            });
+
+        }
+        intervalID = setInterval(GetStatus, 10000);
+    </script>
+</body>
+</html>

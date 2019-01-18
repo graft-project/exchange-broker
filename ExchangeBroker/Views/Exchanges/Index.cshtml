@@ -1,0 +1,175 @@
+﻿@model ReflectionIT.Mvc.Paging.PagingList<ExchangeBroker.Models.ExchangeViewModels.ExchangeViewModel>
+@using ReflectionIT.Mvc.Paging
+@using Graft.Infrastructure
+@addTagHelper *, ReflectionIT.Mvc.Paging
+
+@{
+    ViewData["Title"] = "Exchanges";
+}
+
+<h2>Exchanges</h2>
+
+<form method="get" class="form-inline">
+    <input type="hidden" name="sortExpression" value="@Model.SortExpression" />
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="control-label">Status</label>
+            <br />
+            <select name="status" asp-for="@Model.RouteValue["Status"]" class="form-control" asp-items="Html.GetEnumSelectList<PaymentStatus>()">
+                <option selected="selected">---</option>
+            </select>
+        </div>
+        <br />
+        <div class="form-group">
+            <label class="control-label">Buyer Transaction Status</label>
+            <br />
+            <select name="buyerTranStatus" asp-for="@Model.RouteValue["buyerTranStatus"]" class="form-control" asp-items="Html.GetEnumSelectList<GraftTransactionStatus>()">
+                <option selected="selected">---</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="control-label">From Date</label>
+            <br />
+            @Html.TextBox("fromDate", String.Format("{0:d}", DateTime.UtcNow.ToShortDateString()), new { @class = "form-control", type = "date" })
+        </div>
+        <br />
+        <div class="form-group">
+            <label class="control-label">To Date</label>
+            <br />
+            @Html.TextBox("toDate", String.Format("{0:d}", DateTime.UtcNow.ToShortDateString()), new { @class = "form-control", type = "date" })
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <label class="control-label">Wallet</label>
+        <br />
+        <input name="filter" class="form-control" placeholder="filter" value="@Model.RouteValue["Filter"]" />
+        <br />
+        <label class="control-label"> </label>
+        <br />
+        <button type="submit" class="btn btn-info">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search
+        </button>
+    </div>
+</form>
+
+<nav aria-label="Exchanges">
+    <vc:pager paging-list="@Model" />
+</nav>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                @Html.SortableHeaderFor(model => model.CreatedAt)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.Status)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.SellAmount)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.SellCurrency)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.BuyAmount)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.BuyCurrency)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.SellToUsdRate)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.GraftToUsdRate)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.ExchangeBrokerFee)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.BuyerWallet)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.PayWalletAddress)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.PayAddressIndex)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.ReceivedConfirmations)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.ReceivedAmount)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.BuyerTransactionStatus)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SellAmount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SellCurrency)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BuyAmount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BuyCurrency)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SellToUsdRate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GraftToUsdRate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ExchangeBrokerFee)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BuyerWallet)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PayWalletAddress)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PayAddressIndex)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReceivedConfirmations)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReceivedAmount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BuyerTransactionStatus)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ExchangeId">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav aria-label="Exchanges">
+    <vc:pager paging-list="@Model" />
+</nav>
+
+Total Record Count: @Model.TotalRecordCount

@@ -1,0 +1,62 @@
+﻿@model Graft.Infrastructure.Broker.BrokerExchangeResult
+
+@{
+    ViewData["Title"] = "CheckExchangeStatus";
+}
+
+<hr />
+<div id="bodydiv">
+    <table width="100%">
+
+        <tr>
+            <td width="80%"></td>
+            <td width="20%">
+                <div>
+                    <p>Finish payment with your Bitcoin wallet with QR code or address below.</p>
+                    <div id="qrCode"></div>
+                    <div id="qrCodeData" data-url="@Html.Raw(Model.PayWalletAddress)"></div>
+                    <h4>@Html.Raw(Model.PayWalletAddress)</h4>
+                </div>
+
+                <div>
+                    <h5>Current status:</h5>
+                    <h6 id="status">Waiting for update</h6>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+@section Scripts {
+
+    <script type="text/javascript" src="~/lib/qrcode.js"></script>
+    <script type="text/javascript">
+        var intervalID = -1;
+
+        new QRCode(document.getElementById("qrCode"),
+            {
+                text: "@Html.Raw(Model.PayWalletAddress)",
+                width: 150,
+                height: 150
+            });
+
+        function GetStatus() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetExchangeStatus", "DemoTerminalApp", new { exchangeId = Model.ExchangeId })',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (recData)
+                {
+                    document.getElementById("status").innerText = recData;
+
+                    if (recData == "Received" && intervalID != -1) {
+                        clearInterval(intervalID);
+                    }
+                },
+            });
+        }
+
+        intervalID = setInterval(GetStatus, 10000);
+    </script>
+}

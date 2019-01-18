@@ -1,0 +1,116 @@
+﻿
+@{
+    ViewData["Title"] = "SelectCupOfCoffe";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="google" value="notranslate">
+    <title>Graft Terminal Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <link rel='stylesheet' href='~/css/style.css' type='text/css' media='all' />
+</head>
+<body>
+    <div class='maindisplay'>
+        <div class='top-line'>
+        </div>
+
+        <div class='caption'>
+            GRAFT on Terminal (live demo)
+        </div>
+
+        <div class='mainsection'>
+            <table>
+                <tr>
+                    <td colspan=2 class='items'>
+                        <div class='item'>
+                            <input type='radio' name="coffee" id='item1' checked>
+                            <label for='item1'>
+                                <img src='~/images/coffee1.png'><br>
+                                $1
+                            </label>
+                        </div>
+
+                        <div class='item'>
+                            <input type='radio' name="coffee" id='item2'>
+                            <label for='item2'>
+                                <img src='~/images/coffee2.png'><br>
+                                $3.50
+                            </label>
+                        </div>
+                        <div class='item'>
+                            <input type='radio' name="coffee" id='item3'>
+                            <label for='item3'>
+                                <img src='~/images/coffee3.png'><br>
+                                $5
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Paying with:
+                        <br>
+                        <img id="currencyImage" src='~/images/bitcoin.png' class="cyrency"><span>You can use your<br>favorite wallet to pay*</span>
+                    </td>
+                    <td>
+                        Receiving:
+                        <br>
+                        <img src='~/images/graft.png' class="cyrency"><span>As payout currency*</span>
+                    </td>
+                </tr>
+            </table>
+
+
+        </div>
+
+        <div class='buttonsection'>
+            <button id="b1">Pay</button>
+        </div>
+
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script>
+
+        if ("@ViewData["currencyType"]" == "BTC")
+        {
+            document.getElementById("currencyImage").src = "/images/bitcoin.png";
+        }
+        else
+        {
+            document.getElementById("currencyImage").src = "/images/ethereumSmall.png"; 
+        }
+
+        function Navigate()
+        {
+
+            var value = 1;
+
+            if (document.getElementById('item1').checked) {
+                value = 1;
+            }
+
+            if (document.getElementById('item2').checked) {
+                value = 3.50;
+            }
+
+            if (document.getElementById('item3').checked) {
+                value = 5;
+            }
+
+            var action = '@Url.Action("SelectGraftWallet", "DemoTerminalApp")';
+
+            window.location.href = action + "?price=" + encodeURI(value) + "&currencyType=" + encodeURI("@ViewData["currencyType"]");
+        }
+
+        document.getElementById("b1").addEventListener("click", function () { Navigate(); }, false);
+    </script>
+
+</body>
+</html>
+
