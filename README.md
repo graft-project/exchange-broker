@@ -1,7 +1,7 @@
 # Exchange-broker
 ## **GRAFT Exchange Broker**
 
-Exchange Broker - a GRAFT protocol extension hosted on a supernode or a group of supernodes and hosted by the supernode operator. Exchange broker temporary implements special additional features that cannot be automatically executed by a fully decentralized network and/or require special regulation framework.
+**Exchange Broker** - a GRAFT protocol extension hosted on a supernode or a group of supernodes and hosted by the supernode operator. Exchange broker temporary implements special additional features that cannot be automatically executed by a fully decentralized network and/or require special regulation framework.
 
 **_Hardware / Systems Requirement: Minimum hardware requirements include:_**
  
@@ -514,6 +514,13 @@ _For example:_
 (https://eb-test.graft.network/DemoTerminalApp)
 
 11.2. You should see the screen (pic.1):
+
+![r_2019-01-14_10-49-51](https://user-images.githubusercontent.com/45132833/51415622-23fb9e80-1b7f-11e9-9492-610180ee5349.png)
+Pic.1
+
+11.3. Make sure the Bitcoin currency is selected (pic.1, [1]) and click the "Pay" button (pic.1, [2])
+11.4. You should see the screen (pic.2):
+
 
 
 
