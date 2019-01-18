@@ -146,7 +146,7 @@ Include MySQL to  autorun:
 ```
 sudo systemctl enable mysql 
 ```
-4.   **Nginx **setup
+4.   **Nginx** setup
 >**_If nginx was installed for Payment Gateway you need doing only command marked orange color. _**
 
 4.1. Install nginx
@@ -253,6 +253,267 @@ After that, press Ctrl-X and Y and ENTER
 ```
 sudo systemctl restart nginx 
 ```
+
+# Installation
+
+5. Install **Exchange Broker**:
+
+Create a folder to store the sources (for example src) and clone the repositories into this folder:
+
+5.1. Create folder (you don`t need this step if you created this folder for Payment Gateway):
+```
+mkdir  src
+```
+5.2. Go to folder src:
+```
+cd src
+```
+5.3. Download Exchange Broker:
+```
+git clone --recurse-submodules  https://github.com/graft-project/ExchangeBroker.git
+```
+5.4. Go to folder src/ExchangeBroker/ExchangeBroker:
+```
+cd ExchangeBroker/ExchangeBroker
+```
+5.5. Build EchangeBroker : 
+```
+dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
+```
+_For example:_
+```
+dotnet publish  -c release -v d -o "/home/ubuntu/graft/eb" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
+```
+
+6. Download Geth Node (optional, to support Ethereum):
+
+Download binary code Geth Node from (https://github.com/ethereum/go-ethereum/releases) :
+
+```
+cd <path to build>
+mkdir  <path to store Geth Node>
+cd <path to store Geth Node>
+```
+_For example:_
+```
+cd /home/ubuntu/graft/
+mkdir  ethnode
+cd  /home/ubuntu/graft/ethnode
+wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.8.20-24d727b6.tar.gz
+tar -xvf geth-linux-amd64-1.8.20-24d727b6.tar.gz
+```
+
+7.  Download and Build  Graft Node : 
+
+You have to do it with (https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction)
+
+> Build Graft Supernode - >Graft Node Configuration -> Graft SuperNode configuration 
+
+8. Configure settings:
+
+All settings related to the  application stored in the config file ‘appsettings.json’ located in the root bin directory, 
+_for example,_ "/home/ubuntu/graft/eb".
+Open this file and add/edit following sections:
+```
+sudo nano /home/ubuntu/graft/eb/appsettings.json
+```
+8.1 **Admin** settings for service administrator
+```
+"Admin": {
+    "DefaultPassword": "GRAFT_admin1"
+  },
+```
+where:
+
+ - **GRAFT_admin1** -  default password for service administrator
+
+8.2. **DB** – settings to access previously created database:
+```
+  "DB": {
+    "UserName": "root",
+    "Password": "testpass",
+    "DbName": "exchange_broker",
+    "Server": "127.0.0.1",
+    "Port": "3306"
+  },
+```
+where:
+
+- **UserName** - root name for DB
+- **Password**  -  root password for DB
+- **DbName** - name of DB
+- **Server**  - 127.0.0.1
+- **Port** - 3306
+
+8.3. **Watcher** – this is internal service responsible for monitoring application state and inform the administrator via email in case of any troubles.
+```
+  "Watcher": {
+    "AdminEmails": "admin@<yourcompany>.com",
+    "ErrorEmailSubject": "EB-localhost Error (_service_name_)",
+    "WarningEmailSubject": "EB-localhost Warning (_service_name_)",
+    "RestoreEmailSubject": "EB-localhost Restore (_service_name_)",
+    "CheckPeriod": "10000"
+  },
+```
+where:
+
+- **AdminEmails** - your email.
+- **__service_name_** - is a placeholder for the particular service, leave it as it is.
+- **CheckPeriod** – interval in milliseconds to perform periodical check of the application state  
+
+
+8.4. **EthereumService** - settings for Ethereum: 
+```
+ "EthereumService": {
+    "NetworkType": "PublicRTATestnet",
+    "EthereumGethNodeUrl": "http://localhost:8545",
+    "EthereumPoolWalletPassword": "DefaultPassword",
+    "EthereumBrokerWallet": "",
+    "EthereumPoolDrainLimit": 0.001
+  },
+```
+	where: 
+
+- **NetworkType** - (MainNet, PublicRTATestnet, PublicTestnet) Operational network. (For PublicRTATestnet, PublicTestnet ETH network is Ropsten).
+- **EthereumBrokerWallet** - Ethereum wallet to accept payments.
+- **EthereumPoolDrainLimit** - Fund limit that will drain the ETH pool wallet funds to EthereumBrokerWallet. 
+- **EthereumGethNodeURI** - Path to Geth node.
+- **EthereumPoolWalletPassword** - Exchange broker will create pool of Eth wallets to accommodate simultaneous transactions. This will be the password to new wallets
+
+
+8.5. **BitcoinService** - settings for Bitcoin: 
+```
+"BitcoinService": {
+    "NetworkType": "PublicRTATestnet", 
+    "BitcoinExtPubKeyString":
+"tpubDCfbgtNpe7u966FDF5d6E5P12quCovWdqSA3GzYk5BHuPEbYZNPmDzzp5Qx9q3dVyatEzUR23Qc62Ftms1wLQSTPW8nc7eqFM1H7YbviUjY"
+  },
+```
+where:
+
+- **NetworkType** - (MainNet, PublicRTATestnet, PublicTestnet) Operational network. 
+- **BitcoinExtPubKeyString** - your desired Bitcoin wallet ext key to accept payments.
+
+8.6. **PaymentService** - settings for Exchange Broker:
+```
+ "PaymentService": {
+    "ExchangeBrokerFee": 0.0075,
+    "MaxServiceProviderFee": 0.2,
+    "PaymentTimeoutMinutes": 16
+  },
+```
+where:
+
+- **ExchangeBrokerFee** - Fee for exchange operations.
+- **MaxServiceProviderFee** - Maximum fee that provider can charge for the transaction.
+- **PaymentTimeoutMinutes** - Value in minutes that describes the period where Graft node waits for new transactions before actually performing them.
+
+8.7. **GraftWalletService** - settings for GraftWallet 
+```
+"GraftWalletService": {
+    "RpcUrl": "http://127.0.0.1:28982/"
+```
+where:
+
+**RpcUrl** - Path to Graft RPC node.
+
+>**_Note: your <graft-wallet-name> should contain funds to enable graft payouts_**
+
+9. Install **Exchange Broker**:
+
+9.1.  Go to Exchange broker source directory:
+
+_For example:_
+```
+cd /home/ubuntu/src/ExchangeBroker/
+```
+9.2.  Build EchangeBroker : 
+```
+dotnet publish -v d -o "<your-path-to-publish>" --framework netcoreapp2.1 --runtime <(linux-x64) or other> ExchangeBroker.csproj
+```
+_For example:_
+```
+dotnet publish -v d -o "<your-path-to-publish>" --framework netcoreapp2.1 --runtime <(linux-x64) or other> ExchangeBroker.csproj
+```
+9.3. Populate database with EFCore : 
+```
+dotnet ef database update
+```
+10. Run Exchange Broker:
+
+10.1. Run Geth Node (for Ethereum) :
+```
+./geth --testnet [--datadir "<your-data-dir>"] --rpc --rpcapi personal,web3,eth,outbound
+```
+_For example:_
+```
+cd /home/ubuntu/graft/ethereum/geth-linux-amd64-1.8.20-24d727b6
+./geth --testnet --rpc --rpcapi personal,web3,eth,outbound
+```
+10.2. Run Graft Node 
+```
+./graftnoded --testnet --confirm-external-bind
+```
+_For example:_
+```
+cd  /home/ubuntu/graft/supernode/BILD/bin   
+./graftnoded --testnet --confirm-external-bind
+```
+10.3. Run Graft RPC :
+
+You have to do it with (https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction)
+
+> **_5)Run Supernode -> Appendix 1. Running Graft Node->Creating a wallet and connecting to the local testnet node_**
+
+_For example:_
+
+Create folder:
+```
+cd ./grfat/supernode/data
+mkdir exchangebroker-wallet
+```
+Create a new wallet:
+```
+ 	cd home/ubuntu/graft/supernode/BILD/bin
+./graft-wallet-cli --generate-new-wallet /home/ubuntu/.graft/supernode/data/exchangebroker-wallet/exchangebroker-wallet --testnet --daemon-address localhost:28681
+```
+
+
+> **_Go to /home/ubuntu/.graft/supernode/exchangebroker-wallet and note wallet address from “exchangebroker-wallet.address.txt”. Request stake amount for your Exchange Broker  by sending  email to alpha@graft.network with your wallet address - we will load up your stake wallet with testnet coins._**
+
+
+```
+cd home/ubuntu/graft/supernode/BILD/bin
+./graft-wallet-rpc --testnet --wallet-file /home/ubuntu/.graft/supernode/data/exchangebroker-wallet/exchangebroker-wallet --rpc-bind-port 28982 --password "" --disable-rpc-login --trusted-daemon
+```
+
+10.4.  Go to ExchangeBroker publish folder and run :
+```
+cd <ExchangeBroker publish folder>
+ nohup ./ExchangeBroker &
+```
+_For example:_
+```
+cd /home/ubuntu/graft/eb
+ nohup ./ExchangeBroker &
+```
+
+After that Exchange Broker should be ready to accept transactions.
+
+
+** 11. Verify Installation**
+
+
+11.1.  Open the link https://**name of your site**/DemoTerminalApp
+
+where:
+
+ **name of your site** is name, which you create in ngnix + your domain name.
+ 
+_For example:_
+(https://eb-test.graft.network/DemoTerminalApp)
+
+11.2. You should see the screen (pic.1):
 
 
 
