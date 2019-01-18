@@ -534,6 +534,8 @@ Pic.3
 >**_Note: field “Wallet address” (pic.3,[1]) has a red border  if  wallet address is incorrect.
 Field “Wallet address” (pic.4) has a blue border  if  wallet address is correct:_**
 
+![r_1](https://user-images.githubusercontent.com/45132833/51416430-30cdc180-1b82-11e9-8552-499ea5622fe9.png)
+Pic.4
 
 11.8. You should see the screen (pic.5):
 
@@ -550,4 +552,29 @@ Pic.6
 
 You will see info about successful sended transaction on the screen of your Wallet (pic.7) and late you will receive info about completed transaction:
 
+![r_2](https://user-images.githubusercontent.com/45132833/51416431-30cdc180-1b82-11e9-8a5b-e815593e1562.png)
 
+Pic.7
+
+11.12. You have a successful result if money from your bitcoin wallet send to your graft wallet.
+
+
+**12. Probable errors list:**
+
+**_Error # 1_**
+
+![r_3](https://user-images.githubusercontent.com/45132833/51416432-30cdc180-1b82-11e9-96ac-2b9d6579f333.png)
+
+**_Solution:_** Run ExchangeBroker (see 10.4)
+
+**_Error # 2_**
+
+![picturemessage_tqqqjuwi 0j1](https://user-images.githubusercontent.com/45132833/51416240-4db5c500-1b81-11e9-8e82-f655f4128eae.png)
+
+**_Solution:_** check configuration settings (see 8)
+
+**_Error # 3 :  Button “Proceed” is not pressed_**
+
+![r_4](https://user-images.githubusercontent.com/45132833/51416433-30cdc180-1b82-11e9-9b69-2473f1fb6bb3.png)
+
+**_Solution:_** Enter correct wallet address
