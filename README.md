@@ -37,7 +37,7 @@ _Note:_ In order to GraftNode (also called the cryptonode) work properly 28680 (
 ```
 2. Install **.Net Core 2.1 SDK** :
 
->_You don`t need this step if you created this folder for Payment Gateway_
+>**_You don`t need this step if you created this folder for Payment Gateway_**
 
 2.1. Open a command prompt and run the following commands:
 ```
@@ -52,9 +52,9 @@ sudo apt-get install apt-transport-https
 sudo apt-get update
 sudo apt-get install dotnet-sdk-2.1
 ```
-3.   Install Mysql server for your platform :
+3.   Install **Mysql server** for your platform :
 
->If database was installed for Payment Gateway you need doing only command marked bold.
+>**_If database was installed for Payment Gateway you need doing only command marked bold._**
 
 3.1. Update your package index:
 ```
@@ -97,7 +97,7 @@ create new database:
 ```
 create database <DB name for ExchangeBroker>
 ```
-For example:
+_For example:_
 ```
 create database eb_test;
 ```
@@ -105,7 +105,7 @@ create database eb_test;
 ```
 CREATE USER '<username>'@'localhost' IDENTIFIED BY '<user password>';
 ```
-For example:
+_For example:_
 ```
 CREATE USER 'user1'@'localhost' IDENTIFIED BY 'User_001';
 ```
@@ -113,19 +113,19 @@ CREATE USER 'user1'@'localhost' IDENTIFIED BY 'User_001';
 ```
 GRANT ALL PRIVILEGES ON eb_test . * TO '<username>'@'localhost';
 ```
-For example:
+_For example:_
 ```
 GRANT ALL PRIVILEGES ON eb_test . * TO 'user1'@'localhost';
 ```
-**3.11. Each time you update or change a permission be sure to use the Flush Privileges command:
+**3.11. Each time you update or change a permission be sure to use the Flush Privileges command:**
 ```
 FLUSH PRIVILEGES;
 ```
-Check database:
+**Check database:**
 ```
 show databases;
 ```
-Quit MySql:**
+**Quit MySql:**
 ```
 exit
 ```
@@ -146,3 +146,113 @@ Include MySQL to  autorun:
 ```
 sudo systemctl enable mysql 
 ```
+4.   **Nginx **setup
+>**_If nginx was installed for Payment Gateway you need doing only command marked orange color. _**
+
+4.1. Install nginx
+```
+sudo apt install nginx
+```
+4.2. Check that nginx is running:
+```
+sudo systemctl status nginx
+```
+4.3. If you need to start nginx:
+```
+sudo systemctl start nginx
+```
+4.4. To enable the service to start up at boot:
+```
+sudo systemctl enable nginx
+```
+4.5.  Creating Self-signed Certificates:
+```
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/<name+domain name >.key -out /etc/ssl/certs/eb-test.graft.network.crt
+```
+_For example:_
+For eb-test.graft.network
+```
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/eb-test.graft.network.key -out /etc/ssl/certs/eb-test.graft.network.crt
+```
+You will be asked a few questions about our server in order to embed the information correctly in the certificate.
+Fill out the prompts appropriately. 
+
+While we are using OpenSSL, we should also create a strong Diffie-Hellman group, which is used in negotiating Perfect Forward Secrecy with clients.
+```
+sudo openssl dhparam -out /etc/nginx/ssl/dh2048.pem 2048
+```
+4.6. Make configuration files for <name> in nginx:
+```
+Go to /etc/nginx/conf.d:
+cd /etc/nginx/conf.d
+```
+Create files <name + domain name>.conf 
+
+_For example,  for eb-test.graft.network.conf:_
+```
+sudo nano eb-test.graft.network.conf
+```
+Insert next information:
+_For our example  eb-test.graft.network.conf:_
+```
+upstream localhost-5002 {
+keepalive 64;
+  server 127.0.0.1:5002 max_fails=2 fail_timeout=5s;
+}
+
+upstream localhost-5003 {
+keepalive 64;
+  server 127.0.0.1:5003 max_fails=2 fail_timeout=5s;
+}
+
+server {
+        listen 80;
+        server_name eb-test.graft.network;
+        access_log  /var/log/nginx/eb-test.graft.network.access.log;
+
+        location /.well-known/ {
+            alias /var/www/eb-test.graft.network/.well-known/;
+        }
+
+        location / {
+            proxy_pass       http://localhost-5002;
+            proxy_set_header Host      $host;
+            proxy_set_header X-Real-IP $remote_addr;
+#            return 301 https://$host$request_uri;
+        }
+}
+
+server {
+       listen 443 ssl http2;
+
+       server_name eb-test.graft.network;
+       access_log  /var/log/nginx/eb-test.graft.network.ssl.access.log;
+
+       location / {
+              proxy_pass       https://localhost-5003;
+              proxy_set_header Host      $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+    ssl_certificate      /etc/ssl/certs/eb-test.graft.network.crt;
+    ssl_certificate_key  /etc/ssl/private/eb-test.graft.network.key;
+    ssl_dhparam /etc/nginx/ssl/dh2048.pem;
+    ssl_session_cache shared:SSL:60m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';
+    ssl_prefer_server_ciphers on;
+}
+```
+After that, press Ctrl-X and Y and ENTER
+
+4.7.  Restart nginx:
+```
+sudo systemctl restart nginx 
+```
+
+
+
