@@ -521,6 +521,11 @@ Pic.1
 11.3. Make sure the Bitcoin currency is selected (pic.1, [1]) and click the "Pay" button (pic.1, [2])
 11.4. You should see the screen (pic.2):
 
+![2019-01-15_14-04-37](https://user-images.githubusercontent.com/45132833/51415728-818feb00-1b7f-11e9-96e7-e75ff599e3d3.png)
+Pic.2
+
+11.5. Make sure the cup of coffee- $1 is selected (pic.2, [1]) and click the "Pay" button (pic.2, [2])
+11.6. You should see the screen (pic.3):
 
 
 
