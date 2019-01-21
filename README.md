@@ -276,14 +276,6 @@ git clone --recurse-submodules  https://github.com/graft-project/exchange-broker
 ```
 cd exchange-broker/ExchangeBroker
 ```
-5.5. Build EchangeBroker : 
-```
-dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
-```
-_For example:_
-```
-dotnet publish  -c release -v d -o "/home/ubuntu/graft/eb" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
-```
 
 ### 6. Download Geth Node (optional, to support Ethereum):
 
@@ -361,7 +353,6 @@ where:
 - **__service_name_** - is a placeholder for the particular service, leave it as it is.
 - **CheckPeriod** – interval in milliseconds to perform periodical check of the application state  
 
-
 8.4. **EthereumService** - settings for Ethereum: 
 ```
  "EthereumService": {
@@ -379,7 +370,6 @@ where:
 - **EthereumPoolDrainLimit** - Fund limit that will drain the ETH pool wallet funds to EthereumBrokerWallet. 
 - **EthereumGethNodeURI** - Path to Geth node.
 - **EthereumPoolWalletPassword** - Exchange broker will create pool of Eth wallets to accommodate simultaneous transactions. This will be the password to new wallets
-
 
 8.5. **BitcoinService** - settings for Bitcoin: 
 ```
@@ -429,16 +419,13 @@ cd /home/ubuntu/src/ExchangeBroker/
 ```
 9.2.  Build EchangeBroker : 
 ```
-dotnet publish -v d -o "<your-path-to-publish>" --framework netcoreapp2.1 --runtime <(linux-x64) or other> ExchangeBroker.csproj
+dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
 ```
 _For example:_
 ```
-dotnet publish -v d -o "<your-path-to-publish>" --framework netcoreapp2.1 --runtime <(linux-x64) or other> ExchangeBroker.csproj
+dotnet publish  -c release -v d -o "/home/ubuntu/graft/eb" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
 ```
-9.3. Populate database with EFCore : 
-```
-dotnet ef database update
-```
+
 ### 10. Run Exchange Broker:
 
 10.1. Run Geth Node (for Ethereum) :
@@ -540,8 +527,8 @@ Field “Wallet address” (pic.4) has a blue border  if  wallet address is corr
 Pic.4
 
 11.8. You should see the screen (pic.5):
+![2019-01-21_21-54-21](https://user-images.githubusercontent.com/45132833/51499487-26eecd00-1dd3-11e9-852e-fd9079db0385.png)
 
-![2019-01-15_21-39-03](https://user-images.githubusercontent.com/45132833/51415901-1c88c500-1b80-11e9-8f45-a56ae2b94035.png)
 Pic.5
 
 11.9. information about transaction is displayed on the down side of the screen (pic.5, [2])
