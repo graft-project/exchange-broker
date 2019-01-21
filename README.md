@@ -26,7 +26,7 @@ _Note:_ In order to GraftNode (also called the cryptonode) work properly 28680 (
 - Nginx 
 - 2 Bitcoin Wallet in testnet network - for internal transaction and for test-buyer (we propose for using App Copay).
 - 2 Ethereum wallet in Ropsten network - for internal transaction and for test-buyer (we propose for using App Walleth).  
-- 1 Graft wallet in RTA testnet network (we propose for using our App Graft Wallet).
+- 1 Graft wallet in RTA testnet network (we propose for using App Graft Wallet).
 
 # Install Prerequisites
 
@@ -256,7 +256,7 @@ sudo systemctl restart nginx
 
 # Installation
 
-### 5. Install **Exchange Broker**:
+### 5. Download **Exchange Broker**:
 
 Create a folder to store the sources (for example src) and clone the repositories into this folder:
 
@@ -271,6 +271,18 @@ cd src
 5.3. Download Exchange Broker:
 ```
 git clone --recurse-submodules  https://github.com/graft-project/exchange-broker.git
+```
+5.4.  Go to Exchange broker source directory:
+```
+cd /home/ubuntu/src/exchange-broker/ExchangeBroker
+```
+5.5.  Build EchangeBroker : 
+```
+dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
+```
+_For example:_
+```
+dotnet publish  -c release -v d -o "/home/ubuntu/graft/eb" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
 ```
 
 ### 6. Download Geth Node (optional, to support Ethereum):
@@ -405,25 +417,9 @@ where:
 
 >**_Note: your <graft-wallet-name> should contain funds to enable graft payouts_**
 
-### 9. Install **Exchange Broker**:
+### 9. Run Exchange Broker:
 
-9.1.  Go to Exchange broker source directory:
-```
-cd /home/ubuntu/src/exchange-broker/ExchangeBroker
-```
-
-9.2.  Build EchangeBroker : 
-```
-dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
-```
-_For example:_
-```
-dotnet publish  -c release -v d -o "/home/ubuntu/graft/eb" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
-```
-
-### 10. Run Exchange Broker:
-
-10.1. Run Geth Node (for Ethereum) :
+9.1. Run Geth Node (for Ethereum) :
 ```
 ./geth --testnet [--datadir "<your-data-dir>"] --rpc --rpcapi personal,web3,eth,outbound
 ```
@@ -432,7 +428,7 @@ _For example:_
 cd /home/ubuntu/graft/ethereum/geth-linux-amd64-1.8.20-24d727b6
 ./geth --testnet --rpc --rpcapi personal,web3,eth,outbound
 ```
-10.2. Run Graft Node 
+9.2. Run Graft Node 
 ```
 ./graftnoded --testnet --confirm-external-bind
 ```
@@ -441,7 +437,7 @@ _For example:_
 cd  /home/ubuntu/graft/supernode/BILD/bin   
 ./graftnoded --testnet --confirm-external-bind
 ```
-10.3. Run Graft RPC :
+9.3. Run Graft RPC :
 
 You have to do it with (https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction)
 
@@ -469,7 +465,7 @@ cd home/ubuntu/graft/supernode/BILD/bin
 ./graft-wallet-rpc --testnet --wallet-file /home/ubuntu/.graft/supernode/data/exchangebroker-wallet/exchangebroker-wallet --rpc-bind-port 28982 --password "" --disable-rpc-login --trusted-daemon
 ```
 
-10.4.  Go to ExchangeBroker publish folder and run :
+9.4.  Go to ExchangeBroker publish folder and run :
 ```
 cd <ExchangeBroker publish folder>
  nohup ./ExchangeBroker &
@@ -483,10 +479,10 @@ cd /home/ubuntu/graft/eb
 After that Exchange Broker should be ready to accept transactions.
 
 
-### 11. Verify Installation
+### 10. Verify Installation
 
 
-11.1.  Open the link https://**name of your site**/DemoTerminalApp
+10.1.  Open the link https://**name of your site**/DemoTerminalApp
 
 where:
 
@@ -495,42 +491,42 @@ where:
 _For example:_
 (https://eb-test.graft.network/DemoTerminalApp)
 
-11.2. You should see the screen (pic.1):
+10.2. You should see the screen (pic.1):
 
 ![r_2019-01-14_10-49-51](https://user-images.githubusercontent.com/45132833/51415622-23fb9e80-1b7f-11e9-9492-610180ee5349.png)
 Pic.1
 
-11.3. Make sure the Bitcoin currency is selected (pic.1, [1]) and click the "Pay" button (pic.1, [2])
+10.3. Make sure the Bitcoin currency is selected (pic.1, [1]) and click the "Pay" button (pic.1, [2])
 
-11.4. You should see the screen (pic.2):
+10.4. You should see the screen (pic.2):
 
 ![2019-01-15_14-04-37](https://user-images.githubusercontent.com/45132833/51415728-818feb00-1b7f-11e9-96e7-e75ff599e3d3.png)
 Pic.2
 
-11.5. Make sure the cup of coffee- $1 is selected (pic.2, [1]) and click the "Pay" button (pic.2, [2])
+10.5. Make sure the cup of coffee- $1 is selected (pic.2, [1]) and click the "Pay" button (pic.2, [2])
 
-11.6. You should see the screen (pic.3):
+10.6. You should see the screen (pic.3):
 
 ![2019-01-15_20-04-52](https://user-images.githubusercontent.com/45132833/51415885-18f53e00-1b80-11e9-93a7-7ef659be30a5.png)
 Pic.3
 
-11.7. Enter address of GRAFT Wallet, which will get payment, in the field (pic.3,[1]) and press button (pic.3,[2])
+10.7. Enter address of GRAFT Wallet, which will get payment, in the field (pic.3,[1]) and press button (pic.3,[2])
 >**_Note: field “Wallet address” (pic.3,[1]) has a red border  if  wallet address is incorrect.
 Field “Wallet address” (pic.4) has a blue border  if  wallet address is correct:_**
 
 ![r_1](https://user-images.githubusercontent.com/45132833/51416430-30cdc180-1b82-11e9-8552-499ea5622fe9.png)
 Pic.4
 
-11.8. You should see the screen (pic.5):
+10.8. You should see the screen (pic.5):
 ![2019-01-21_21-54-21](https://user-images.githubusercontent.com/45132833/51499487-26eecd00-1dd3-11e9-852e-fd9079db0385.png)
 
 Pic.5
 
-11.9. information about transaction is displayed on the down side of the screen (pic.5, [2])
+10.9. information about transaction is displayed on the down side of the screen (pic.5, [2])
 
-11.10. Open your bitcoin wallet, scan qr-code (pic.5, [1]) and pay this payment.
+10.10. Open your bitcoin wallet, scan qr-code (pic.5, [1]) and pay this payment.
 
-11.11. Wait for transferring  transaction. If transaction is sended:
+10.11. Wait for transferring  transaction. If transaction is sended:
 
  you will see info about successful completed transaction on the screen of your PC/laptop (pic.6):
 
@@ -543,16 +539,16 @@ You will see info about successful sended transaction on the screen of your Wall
 
 Pic.7
 
-11.12. You have a successful result if money from your bitcoin wallet send to your graft wallet.
+10.12. You have a successful result if money from your bitcoin wallet send to your graft wallet.
 
 
-### 12. Probable errors list:
+### 11. Probable errors list:
 
 **_Error # 1_**
 
 ![r_3](https://user-images.githubusercontent.com/45132833/51416432-30cdc180-1b82-11e9-96ac-2b9d6579f333.png)
 
-**_Solution:_** Run ExchangeBroker (see 10.4)
+**_Solution:_** Run ExchangeBroker (see 9.4)
 
 **_Error # 2_**
 
