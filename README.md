@@ -270,11 +270,11 @@ cd src
 ```
 5.3. Download Exchange Broker:
 ```
-git clone --recurse-submodules  https://github.com/graft-project/ExchangeBroker.git
+git clone --recurse-submodules  https://github.com/graft-project/exchange-broker.git
 ```
-5.4. Go to folder src/ExchangeBroker/ExchangeBroker:
+5.4. Go to folder src/exchange-broker/ExchangeBroker:
 ```
-cd ExchangeBroker/ExchangeBroker
+cd exchange-broker/ExchangeBroker
 ```
 5.5. Build EchangeBroker : 
 ```
@@ -305,7 +305,7 @@ tar -xvf geth-linux-amd64-1.8.20-24d727b6.tar.gz
 
 ### 7.  Download and Build  Graft Node : 
 
-You have to do it with (https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction)
+You have to do it with https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction
 
 > Build Graft Supernode - >Graft Node Configuration -> Graft SuperNode configuration 
 
