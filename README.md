@@ -272,10 +272,6 @@ cd src
 ```
 git clone --recurse-submodules  https://github.com/graft-project/exchange-broker.git
 ```
-5.4. Go to folder src/exchange-broker/ExchangeBroker:
-```
-cd exchange-broker/ExchangeBroker
-```
 
 ### 6. Download Geth Node (optional, to support Ethereum):
 
@@ -412,11 +408,10 @@ where:
 ### 9. Install **Exchange Broker**:
 
 9.1.  Go to Exchange broker source directory:
+```
+cd /home/ubuntu/src/exchange-broker/ExchangeBroker
+```
 
-_For example:_
-```
-cd /home/ubuntu/src/ExchangeBroker/
-```
 9.2.  Build EchangeBroker : 
 ```
 dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
