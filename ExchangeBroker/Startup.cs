@@ -135,8 +135,8 @@ namespace ExchangeBroker
                 ConnectionString,
                 loggerFactory,
                 Configuration["EthereumService:NetworkType"] != "MainNet",
-                Configuration["EthereumService:EthereumGethNodeUrl"],
                 Configuration["EthereumService:EthereumPoolWalletPassword"],
+                Configuration["EthereumService:EthereumGethNodeUrl"],
                 Configuration["EthereumService:EthereumBrokerWallet"],
                 Convert.ToDecimal(Configuration["EthereumService:EthereumPoolDrainLimit"]));
 
