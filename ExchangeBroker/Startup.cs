@@ -121,6 +121,9 @@ namespace ExchangeBroker
             watcher.Add(bitcoinService);
             watcher.Add(graftWalletService);
 
+            // comment this line if you want to apply the migrations as a separate process
+            context.Database.Migrate();
+
             BitcoinService.Init(options =>
             {
                 options.IsTestNetwork = Configuration["BitcoinService:NetworkType"] != "MainNet";
@@ -147,8 +150,7 @@ namespace ExchangeBroker
                 ConnectionString,
                 loggerFactory);
 
-            // comment this line if you want to apply the migrations as a separate process
-            context.Database.Migrate();
+
         }
     }
 }
