@@ -18,7 +18,7 @@ namespace ExchangeBroker.Services
         {
             AccountPoolService accountPoolService = new AccountPoolService(DBConnectionString, loggerFactory);
 
-            TransactionManager = new EthereumLib.TransactionManager(accountPoolService, isTestnet, defaultAccountPassword, gethNodeAddress, drainAddress, drainLimit);
+            TransactionManager = new EthereumLib.TransactionManager(loggerFactory, accountPoolService, isTestnet, defaultAccountPassword, gethNodeAddress, drainAddress, drainLimit);
 
             AccountPoolService = accountPoolService;
 
