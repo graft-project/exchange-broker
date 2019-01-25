@@ -167,7 +167,7 @@ sudo systemctl enable nginx
 ```
 **4.5.  Creating Self-signed Certificates:**
 ```
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/<name+domain name >.key -out /etc/ssl/certs/eb-test.graft.network.crt
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/<name+domain name >.key -out /etc/ssl/certs/<name+domain name >.crt
 ```
 _For example:_
 For eb-test.graft.network
