@@ -1,7 +1,7 @@
 # Exchange-broker
 ## **GRAFT Exchange Broker**
 
-**_Exchange Broker_** - a GRAFT protocol extension hosted on a supernode or a group of supernodes and hosted by the supernode operator. Exchange broker temporary implements special additional features that cannot be automatically executed by a fully decentralized network and/or require special regulation framework.
+**_Exchange Broker_** - a GRAFT ecosystem protocol extension designed to faciliate the exchange operations in the network.  A pay-in exchange broker provides support for in-bound (payer) exchanges.  It can be hosted by a party looking to provide exchange services to the network.  Current implementation is limited to a "full stack" service provider (providing exchange and payout services to the merchant or the merchant themselves), in the future the component will function independently as a plug-in to the SuperNode.  Current implementation is in C#, to serve as a reference design - ports to other languages are welcome.
 
 **_Hardware / Systems Requirement: Minimum hardware requirements include:_**
  
