@@ -1,8 +1,6 @@
 ﻿using ExchangeBroker.Models;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -64,7 +62,7 @@ namespace ExchangeBroker.Services
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Etherium Check Exchange failed");
+                logger.LogError(ex, "Ethereum Check Exchange failed");
                 throw;
             }
         }
@@ -108,7 +106,7 @@ namespace ExchangeBroker.Services
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Etherium Check Payment failed");
+                logger.LogError(ex, "Ethereum Check Payment failed");
                 throw;
             }
         }
@@ -127,12 +125,12 @@ namespace ExchangeBroker.Services
 
         public string GetUri(Payment payment)
         {
-            return $"ethereum:{payment.PayWalletAddress}?value={string.Format("{0:#.0#e-00}", EthereumLib.Converter.DecimalToAtomicUnit(payment.PayAmount))}";
+            return $"ethereum:{payment.PayWalletAddress}?value={EthereumLib.Converter.DecimalToAtomicUnit(payment.PayAmount).Value:#.0#e-00}";
         }
 
         public string GetUri(Exchange exchange)
         {
-            return $"ethereum:{exchange.PayWalletAddress}?value={string.Format("{0:#.0#e-00}", EthereumLib.Converter.DecimalToAtomicUnit(exchange.SellAmount))}";
+            return $"ethereum:{exchange.PayWalletAddress}?value={EthereumLib.Converter.DecimalToAtomicUnit(exchange.SellAmount).Value:#.0#e-00}";
         }
     }
 }

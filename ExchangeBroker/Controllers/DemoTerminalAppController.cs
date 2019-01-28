@@ -81,7 +81,7 @@ namespace ExchangeBroker.Controllers
 
                 var exchangeResult = await CreateExchange(brokerExchangeParams);
 
-                ViewData["currencyName"] = currencyType.ToUpper() == "BTC" ? "Bitcoin" : "Etherium";
+                ViewData["currencyName"] = currencyType.ToUpper() == "BTC" ? "Bitcoin" : "Ethereum";
 
                 return View(new Tuple<BrokerExchangeResult, string>(exchangeResult, price));
             }
