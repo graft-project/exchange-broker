@@ -1,34 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ExchangeBroker.Data;
+﻿using ExchangeBroker.Services;
 using Graft.Infrastructure.Broker;
-using ExchangeBroker.Services;
-using ExchangeBroker.Controllers.Api;
-using Graft.Infrastructure.Rate;
-using Microsoft.Extensions.Caching.Memory;
-using ExchangeBroker.Models;
-using Graft.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ExchangeBroker.Controllers
 {
     public class DemoTerminalAppController : Controller
     {
-        readonly ILogger logger;
-        readonly IExchangeService exchangeService;
+        readonly ILogger _logger;
+        readonly IExchangeService _exchangeService;
 
         public DemoTerminalAppController(ILoggerFactory loggerFactory,
             IExchangeService exchangeService)
         {
-            this.logger = loggerFactory.CreateLogger(nameof(DemoTerminalAppController));
-            this.exchangeService = exchangeService;
+            _logger = loggerFactory.CreateLogger(nameof(DemoTerminalAppController));
+            _exchangeService = exchangeService;
         }
 
         public IActionResult Index()
@@ -54,8 +43,7 @@ namespace ExchangeBroker.Controllers
 
         public IActionResult SelectGraftWallet(string price, string currencyType)
         {
-            decimal result;
-            if (decimal.TryParse(price, out result))
+            if (decimal.TryParse(price, out decimal result))
             {
                 ViewData["currencyType"] = currencyType;
                 ViewData["price"] = price;
@@ -67,19 +55,27 @@ namespace ExchangeBroker.Controllers
 
         public async Task<IActionResult> QrCode(string price, string wallet, string currencyType)
         {
-            decimal result;
-
-            if( decimal.TryParse(price, out result) && !string.IsNullOrWhiteSpace(wallet) && wallet.Length >= 95)
+            if (decimal.TryParse(price, out decimal result) && !string.IsNullOrWhiteSpace(wallet) && wallet.Length >= 95)
             {
-                BrokerExchangeParams brokerExchangeParams = new BrokerExchangeParams();
+                BrokerExchangeParams brokerExchangeParams = new BrokerExchangeParams
+                {
+                    SellFiatAmount = result,
+                    WalletAddress = wallet,
+                    FiatCurrency = "USD",
+                    BuyCurrency = "GRFT",
+                    SellCurrency = currencyType.ToUpper()
+                };
 
-                brokerExchangeParams.SellFiatAmount = result;
-                brokerExchangeParams.WalletAddress = wallet;
-                brokerExchangeParams.FiatCurrency = "USD";
-                brokerExchangeParams.BuyCurrency = "GRFT";
-                brokerExchangeParams.SellCurrency = currencyType.ToUpper();
-
-                var exchangeResult = await CreateExchange(brokerExchangeParams);
+                BrokerExchangeResult exchangeResult = null;
+                try
+                {
+                    exchangeResult = await CreateExchange(brokerExchangeParams);
+                }
+                catch (Exception ex)
+                {
+                    ViewData["ErrorMessage"] = $"{ex.Message} ({ex.InnerException?.Message})";
+                    return View("Error");
+                }
 
                 ViewData["currencyName"] = currencyType.ToUpper() == "BTC" ? "Bitcoin" : "Ethereum";
 
@@ -102,7 +98,7 @@ namespace ExchangeBroker.Controllers
 
         public async Task<IActionResult> GetExchangeStatus(string exchangeId)
         {
-            var res = await exchangeService.ExchangeStatus(exchangeId);
+            var res = await _exchangeService.ExchangeStatus(exchangeId);
            
             return Json(res.Status.ToString());
         }
@@ -118,7 +114,7 @@ namespace ExchangeBroker.Controllers
                 }
                 else
                 {
-                    var res = await exchangeService.ExchangeStatus(exchangeId);
+                    var res = await _exchangeService.ExchangeStatus(exchangeId);
 
                     var sb = new StringBuilder();
 
@@ -135,7 +131,7 @@ namespace ExchangeBroker.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Faild to fetch status");
+                _logger.LogError(e, "Failed to fetch status");
             }
 
             return Json("Initialized!");
@@ -143,7 +139,7 @@ namespace ExchangeBroker.Controllers
 
         internal async Task<BrokerExchangeResult> CreateExchange(BrokerExchangeParams model)
         {
-            var exchange = await exchangeService.Exchange(model);
+            var exchange = await _exchangeService.Exchange(model);
             return exchange;
         }
     }
