@@ -4,7 +4,7 @@
 **_Exchange Broker_** - a GRAFT ecosystem protocol extension designed to faciliate the exchange operations in the network.  A pay-in exchange broker provides support for in-bound (payer) exchanges.  It can be hosted by a party looking to provide exchange services to the network.  Current implementation is limited to a "full stack" service provider (providing exchange and payout services to the merchant or the merchant themselves), in the future the component will function independently as a plug-in to the SuperNode.  Current implementation is in C#, to serve as a reference design - ports to other languages are welcome.
 
 **_Hardware / Systems Requirement: Minimum hardware requirements include:_**
- 
+
  **OS:** Ubuntu **18.04** LTS Bionic
 
 Name|Build Requirments	|Run Requirements
@@ -24,8 +24,8 @@ _Note:_ In order to GraftNode (also called the cryptonode) work properly 28680 (
 - .Net Core 2.1 SDK  
 - Git
 - Nginx 
-- 2 Bitcoin Wallet in testnet network - for internal transaction and for test-buyer (we propose for using App Copay).
-- 2 Ethereum wallet in Ropsten network - for internal transaction and for test-buyer (we propose for using App Walleth).  
+- 2 Bitcoin Wallets in the testnet network - for internal transaction and for test-buyer (we propose using "Mycelium Wallet for Testnet" for Android and Copay for iOS ).
+- 2 Ethereum wallets in the Ropsten network - for internal transaction and for test-buyer (we propose using the App Walleth ).  
 - 1 Graft wallet in RTA testnet network (we propose for using App Graft Wallet).
 
 # Install Prerequisites
@@ -43,7 +43,7 @@ _Note:_ In order to GraftNode (also called the cryptonode) work properly 28680 (
 ```
 wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
-``` 
+```
 2.2. Update the products available for installation, then install the .NET SDK.
 
 In your command prompt, run the following commands:
@@ -68,7 +68,7 @@ sudo apt install mysql-server
 ```
 sudo mysql_secure_installation
 ```
-This will take you through a series of prompts where you can make some changes to your MySQL installation security options. 
+This will take you through a series of prompts where you can make some changes to your MySQL installation security options.
 - The first prompt will ask whether you’d like to set up the Validate Password Plugin, which can be used to test the strength of your MySQL password. Type y and ENTER to enable it. You will also be prompted to choose a level from 0–2 for how strict the password validation will be.  Choose 1 and hit ENTER to continue.
 - The next prompt will be to set a password for the MySQL root user. Enter and then confirm a secure password of your choice.
 - From there, you can press Y and then ENTER to accept the defaults for all the subsequent questions. This will remove some anonymous users and the test database, disable remote root logins, and load these new rules so that MySQL immediately respects the changes you have made.
@@ -83,7 +83,7 @@ sudo systemctl start mysql
 ```
 **3.6. Login to mysql as root (password was created in 3.3):**
 ```
- sudo mysql -u root -p 
+ sudo mysql -u root -p
 ```
 You stay in mysql>
 
@@ -144,7 +144,7 @@ exit
 ```
 Include MySQL to  autorun:
 ```
-sudo systemctl enable mysql 
+sudo systemctl enable mysql
 ```
 ### 4.   **Nginx** setup
 > **_If nginx was installed for Payment Gateway you need doing only command marked bold._**
@@ -175,7 +175,7 @@ For eb-test.graft.network
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/eb-test.graft.network.key -out /etc/ssl/certs/eb-test.graft.network.crt
 ```
 You will be asked a few questions about our server in order to embed the information correctly in the certificate.
-Fill out the prompts appropriately. 
+Fill out the prompts appropriately.
 
 While we are using OpenSSL, we should also create a strong Diffie-Hellman group, which is used in negotiating Perfect Forward Secrecy with clients.
 ```
@@ -187,7 +187,7 @@ sudo openssl dhparam -out /etc/nginx/ssl/dh2048.pem 2048
 Go to /etc/nginx/conf.d:
 cd /etc/nginx/conf.d
 ```
-Create files <name + domain name>.conf 
+Create files <name + domain name>.conf
 
 _For example,  for eb-test.graft.network.conf:_
 ```
@@ -252,7 +252,7 @@ After that, press Ctrl-X and Y and ENTER
 
 **4.7.  Restart nginx:**
 ```
-sudo systemctl restart nginx 
+sudo systemctl restart nginx
 ```
 
 # Installation
@@ -277,7 +277,7 @@ git clone --recurse-submodules  https://github.com/graft-project/exchange-broker
 ```
 cd /home/ubuntu/src/exchange-broker/ExchangeBroker
 ```
-5.5.  Build EchangeBroker : 
+5.5.  Build EchangeBroker :
 ```
 dotnet publish  -c release -v d -o "<path to build>" --framework netcoreapp2.1 --runtime linux-x64 ExchangeBroker.csproj
 ```
@@ -304,15 +304,15 @@ wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.8.20-24d7
 tar -xvf geth-linux-amd64-1.8.20-24d727b6.tar.gz
 ```
 
-### 7.  Download and Build  Graft Node : 
+### 7.  Download and Build  Graft Node :
 
 You have to do it with https://github.com/graft-project/graft-ng/wiki/Alpha-RTA-Testnet-Install-&-Usage-Instruction
 
-> Build Graft Supernode - >Graft Node Configuration -> Graft SuperNode configuration 
+> Build Graft Supernode - >Graft Node Configuration -> Graft SuperNode configuration
 
 ### 8. Configure settings:
 
-All settings related to the  application stored in the config file ‘appsettings.json’ located in the root bin directory, 
+All settings related to the  application stored in the config file ‘appsettings.json’ located in the root bin directory,
 _for example,_ "/home/ubuntu/graft/eb".
 Open this file and add/edit following sections:
 ```
@@ -360,9 +360,9 @@ where:
 
 - **AdminEmails** - your email.
 - **__service_name_** - is a placeholder for the particular service, leave it as it is.
-- **CheckPeriod** – interval in milliseconds to perform periodical check of the application state  
+- **CheckPeriod** – interval in milliseconds to perform periodical check of the application state
 
-8.4. **EthereumService** - settings for Ethereum: 
+8.4. **EthereumService** - settings for Ethereum:
 ```
  "EthereumService": {
     "NetworkType": "PublicRTATestnet",
@@ -372,25 +372,25 @@ where:
     "EthereumPoolDrainLimit": 0.001
   },
 ```
-	where: 
+	where:
 
 - **NetworkType** - (MainNet, PublicRTATestnet, PublicTestnet) Operational network. (For PublicRTATestnet, PublicTestnet ETH network is Ropsten).
 - **EthereumBrokerWallet** - Ethereum wallet to accept payments.
-- **EthereumPoolDrainLimit** - Fund limit that will drain the ETH pool wallet funds to EthereumBrokerWallet. 
+- **EthereumPoolDrainLimit** - Fund limit that will drain the ETH pool wallet funds to EthereumBrokerWallet.
 - **EthereumGethNodeURI** - Path to Geth node.
 - **EthereumPoolWalletPassword** - Exchange broker will create pool of Eth wallets to accommodate simultaneous transactions. This will be the password to new wallets
 
-8.5. **BitcoinService** - settings for Bitcoin: 
+8.5. **BitcoinService** - settings for Bitcoin:
 ```
 "BitcoinService": {
-    "NetworkType": "PublicRTATestnet", 
+    "NetworkType": "PublicRTATestnet",
     "BitcoinExtPubKeyString":
 "tpubDCfbgtNpe7u966FDF5d6E5P12quCovWdqSA3GzYk5BHuPEbYZNPmDzzp5Qx9q3dVyatEzUR23Qc62Ftms1wLQSTPW8nc7eqFM1H7YbviUjY"
   },
 ```
 where:
 
-- **NetworkType** - (MainNet, PublicRTATestnet, PublicTestnet) Operational network. 
+- **NetworkType** - (MainNet, PublicRTATestnet, PublicTestnet) Operational network.
 - **BitcoinExtPubKeyString** - your desired Bitcoin wallet ext key to accept payments.
 
 8.6. **PaymentService** - settings for Exchange Broker:
@@ -407,7 +407,7 @@ where:
 - **MaxServiceProviderFee** - Maximum fee that provider can charge for the transaction.
 - **PaymentTimeoutMinutes** - Value in minutes that describes the period where Graft node waits for new transactions before actually performing them.
 
-8.7. **GraftWalletService** - settings for GraftWallet 
+8.7. **GraftWalletService** - settings for GraftWallet
 ```
 "GraftWalletService": {
     "RpcUrl": "http://127.0.0.1:28982/"
@@ -429,13 +429,13 @@ _For example:_
 cd /home/ubuntu/graft/ethereum/geth-linux-amd64-1.8.20-24d727b6
 ./geth --testnet --rpc --rpcapi personal,web3,eth,outbound
 ```
-9.2. Run Graft Node 
+9.2. Run Graft Node
 ```
 ./graftnoded --testnet --confirm-external-bind
 ```
 _For example:_
 ```
-cd  /home/ubuntu/graft/supernode/BILD/bin   
+cd  /home/ubuntu/graft/supernode/BILD/bin
 ./graftnoded --testnet --confirm-external-bind
 ```
 9.3. Run Graft RPC :
@@ -488,7 +488,7 @@ After that Exchange Broker should be ready to accept transactions.
 where:
 
  **name of your site** is name, which you create in ngnix + your domain name.
- 
+
 _For example:_
 (https://eb-test.graft.network/DemoTerminalApp)
 
