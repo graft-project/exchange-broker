@@ -119,23 +119,24 @@ namespace ExchangeBroker.Services
             }
 
 
-            //todo - 
+            //todo - move this check into a background thread
             {
-                await _cryptoProviderService.CheckExchange(exchange);
-                if (exchange.Status == PaymentStatus.Received)
+                if (await _cryptoProviderService.CheckExchange(exchange))
                 {
-                    exchange.Log($"Received Payment of {exchange.ReceivedAmount} {exchange.SellCurrency}"); 
+                    if (exchange.Status == PaymentStatus.Received)
+                    {
+                        exchange.Log($"Received Payment of {exchange.ReceivedAmount} {exchange.SellCurrency}");
 
-                    // received amount can be different from initial amount, 
-                    // so we need to recalculate all amounts
-                    ExchangeCalculator.Recalc(exchange, _settings);
+                        // received amount can be different from initial amount, 
+                        // so we need to recalculate all amounts
+                        ExchangeCalculator.Recalc(exchange, _settings);
 
-                    await _wallet.ProcessExchange(exchange, _db);
+                        await _wallet.ProcessExchange(exchange, _db);
+                    }
+
+                    _db.Exchange.Update(exchange);
+                    await _db.SaveChangesAsync();
                 }
-
-
-                _db.Exchange.Update(exchange);
-                await _db.SaveChangesAsync();
             }
 
             var res = GetExchangeResult(exchange);

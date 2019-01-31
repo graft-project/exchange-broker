@@ -1,10 +1,8 @@
 ﻿using ExchangeBroker.Data;
 using Graft.Infrastructure;
-using Graft.Infrastructure.AccountPool;
 using GraftLib;
 using GraftLib.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,17 +13,19 @@ namespace ExchangeBroker.Services
 {
     public class DatabaseWorker : IDatabaseWorker
     {
-        private readonly ApplicationDbContext applicationDbContext;
-        private readonly ApplicationDbContext applicationDbContextTransactions;
-        private readonly ILogger logger;
+        private readonly ApplicationDbContext _db;
+        private readonly ApplicationDbContext _dbTransactions;
+        private readonly ILogger _logger;
 
         public DatabaseWorker(string dbConnectionString, ILoggerFactory loggerFactory)
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>();
             options.UseMySql(dbConnectionString);
-            this.applicationDbContext = new ApplicationDbContext(options.Options);
-            this.applicationDbContextTransactions = new ApplicationDbContext(options.Options);
-            this.logger = loggerFactory.CreateLogger<DatabaseWorker>();
+
+            _db = new ApplicationDbContext(options.Options);
+            _dbTransactions = new ApplicationDbContext(options.Options);
+
+            _logger = loggerFactory.CreateLogger<DatabaseWorker>();
         }
 
         public async Task<IEnumerable<TransactionRequest>> GetNewTransactions()
@@ -34,21 +34,21 @@ namespace ExchangeBroker.Services
 
             try
             {
-                var data = applicationDbContextTransactions
+                var data = _dbTransactions
                     .TransactionRequests
                     .Where(x => x.Status == TransactionRequestStatus.New || x.Status == TransactionRequestStatus.Failed || (x.Status == TransactionRequestStatus.InProgress && (DateTime.Now - x.LastUpdatedTime).TotalMinutes > 20) )
                     .ToList();
 
                 data.ForEach(x => x.Status = TransactionRequestStatus.InProgress);
-                await applicationDbContextTransactions.SaveChangesAsync();
+                await _dbTransactions.SaveChangesAsync();
 
                 result = data;
 
-                logger.LogInformation($"Found {data.Count} new transactions.");
+                _logger.LogInformation($"Found {data.Count} new transactions.");
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error finding new transactions.");
+                _logger.LogWarning(e, $"Error finding new transactions.");
             }
 
             return result;
@@ -60,12 +60,15 @@ namespace ExchangeBroker.Services
 
             try
             {
-                data = await applicationDbContext.TransactionRequests.Where(x => x.Status == TransactionRequestStatus.Sent || x.Status == TransactionRequestStatus.RpcFailed).ToListAsync();
-                logger.LogInformation($"Found {data.Count()} sent transactions.");
+                data = await _db.TransactionRequests
+                    .Where(x => x.Status == TransactionRequestStatus.Sent || x.Status == TransactionRequestStatus.RpcFailed)
+                    .ToListAsync();
+
+                _logger.LogInformation($"Found {data.Count()} sent transactions.");
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error finding sent transactions.");
+                _logger.LogWarning(e, $"Error finding sent transactions.");
             }
 
             return data;
@@ -73,10 +76,10 @@ namespace ExchangeBroker.Services
 
         public async Task SetTransactionStatus(IEnumerable<string> ids, bool isFailed, string TxId)
         {
-            logger.LogInformation($"SetTransactionStatus : Setting status {isFailed} with TXID : '{TxId}' for : {string.Join(",", ids)}");
+            _logger.LogInformation($"SetTransactionStatus : Setting status {isFailed} with TXID : '{TxId}' for : {string.Join(",", ids)}");
             try
             {
-                var transactions = from transaction in applicationDbContextTransactions.TransactionRequests
+                var transactions = from transaction in _dbTransactions.TransactionRequests
                                    where ids.Contains(transaction.Id)
                                    select transaction;
                 if (isFailed)
@@ -92,32 +95,32 @@ namespace ExchangeBroker.Services
                     });
                 }
 
-                await applicationDbContextTransactions.SaveChangesAsync();
+                await _dbTransactions.SaveChangesAsync();
 
                 await UpdatePaymentAndExchangeStatuses(isFailed ? TransactionRequestStatus.Failed : TransactionRequestStatus.Sent, ids);
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error SetTransactionStatus.");
+                _logger.LogWarning(e, $"Error SetTransactionStatus.");
             }
         }
 
         public async Task UpdateTransactionStatus(string id, TransactionRequestStatus transactionRequestStatus)
         {
-            logger.LogInformation($"UpdateTransactionStatus : Setting status {transactionRequestStatus} for : {id}");
+            _logger.LogInformation($"UpdateTransactionStatus : Setting status {transactionRequestStatus} for : {id}");
 
             try
             {
-                var transaction = await applicationDbContext.TransactionRequests.SingleOrDefaultAsync(x => x.Id == id);
+                var transaction = await _db.TransactionRequests.SingleOrDefaultAsync(x => x.Id == id);
 
                 transaction.Status = transactionRequestStatus;
 
-                await applicationDbContext.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 await UpdatePaymentAndExchangeStatuses(transactionRequestStatus, id);
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error UpdateTransactionStatus.");
+                _logger.LogWarning(e, $"Error UpdateTransactionStatus.");
             }
         }
 
@@ -128,7 +131,7 @@ namespace ExchangeBroker.Services
 
         private async Task UpdatePaymentAndExchangeStatuses(TransactionRequestStatus transactionRequestStatus, params string[] ids)
         {
-            logger.LogInformation($"UpdatePaymentAndExchangeStatuses : Setting status {transactionRequestStatus} for : {string.Join(",", ids)}");
+            _logger.LogInformation($"UpdatePaymentAndExchangeStatuses : Setting status {transactionRequestStatus} for : {string.Join(",", ids)}");
 
             GraftTransactionStatus newStatus;
 
@@ -154,47 +157,47 @@ namespace ExchangeBroker.Services
 
             try
             {
-                var exchanges = from exchange in applicationDbContext.Exchange
+                var exchanges = from exchange in _db.Exchange
                                 where ids.Contains(exchange.BuyerTransactionId)
                                 select exchange;
 
                 exchanges.ToList().ForEach(x => x.BuyerTransactionStatus = newStatus);
 
-                await applicationDbContext.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error UpdatePaymentAndExchangeStatuses : Set Exchanges.");
+                _logger.LogWarning(e, $"Error UpdatePaymentAndExchangeStatuses : Set Exchanges.");
             }
 
             try
             {
-                var payments = from exchange in applicationDbContext.Payment
+                var payments = from exchange in _db.Payment
                                 where ids.Contains(exchange.MerchantTransactionId)
                                 select exchange;
 
                 payments.ToList().ForEach(x => x.MerchantTransactionStatus = newStatus);
 
-                await applicationDbContext.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error UpdatePaymentAndExchangeStatuses : Set Payments : Merchant transaction.");
+                _logger.LogWarning(e, $"Error UpdatePaymentAndExchangeStatuses : Set Payments : Merchant transaction.");
             }
 
             try
             {
-                var payments = from exchange in applicationDbContext.Payment
+                var payments = from exchange in _db.Payment
                                where ids.Contains(exchange.ProviderTransactionId)
                                 select exchange;
 
                 payments.ToList().ForEach(x => x.ProviderTransactionStatus = newStatus);
 
-                await applicationDbContext.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
             catch (Exception e)
             {
-                logger.LogWarning(e, $"Error UpdatePaymentAndExchangeStatuses : Set Payments : Provider transaction.");
+                _logger.LogWarning(e, $"Error UpdatePaymentAndExchangeStatuses : Set Payments : Provider transaction.");
             }
         }
     }

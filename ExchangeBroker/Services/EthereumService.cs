@@ -23,8 +23,9 @@ namespace ExchangeBroker.Services
             logger = loggerFactory.CreateLogger<EthereumService>();
         }
 
-        public async Task CheckExchange(Exchange exchange)
+        public async Task<bool> CheckExchange(Exchange exchange)
         {
+            bool changed = false;
             try
             {
                 decimal addedValue = 0;
@@ -34,26 +35,34 @@ namespace ExchangeBroker.Services
                 var status = await TransactionManager.GetTransactionsByAddress(exchange.PayWalletAddress);
 
                 if (status == null)
-                    return;
+                    return changed;
 
                 var lastRecord = status.Result.OrderByDescending(x => x.BlockNumber).FirstOrDefault();
 
                 if(lastRecord == null || lastRecord.Hash == lastHash)
-                {
-                    return;
-                }
+                    return changed;
 
                 if(lastRecord.IsError == 1)
                 {
-                    exchange.Status = Graft.Infrastructure.PaymentStatus.Fail;
+                    if (exchange.Status != Graft.Infrastructure.PaymentStatus.Fail)
+                    {
+                        exchange.Status = Graft.Infrastructure.PaymentStatus.Fail;
+                        changed = true;
+                    }
                 }
                 else
                 {
-                    exchange.Status = Graft.Infrastructure.PaymentStatus.Received;
-                    exchange.ReceivedConfirmations = (int)lastRecord.Confirmations;
                     if(long.TryParse(lastRecord.Value, out long val))
                     {
                         addedValue = EthereumLib.Converter.AtomicToDecimal(val);
+                    }
+
+                    if (exchange.Status != Graft.Infrastructure.PaymentStatus.Received ||
+                        exchange.ReceivedConfirmations != (int)lastRecord.Confirmations ||
+                        exchange.ReceivedAmount != addedValue)
+                    {
+                        exchange.Status = Graft.Infrastructure.PaymentStatus.Received;
+                        exchange.ReceivedConfirmations = (int)lastRecord.Confirmations;
                         exchange.ReceivedAmount = addedValue;
                     }
                 }
@@ -65,6 +74,7 @@ namespace ExchangeBroker.Services
                 logger.LogError(ex, "Ethereum Check Exchange failed");
                 throw;
             }
+            return changed;
         }
 
         public async Task CheckPayment(Payment payment)

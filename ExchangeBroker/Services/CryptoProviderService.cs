@@ -18,7 +18,7 @@ namespace ExchangeBroker.Services
             registeredServices.Add("ETH", ethereumService);
         }
 
-        public Task CheckExchange(Exchange exchange)
+        public Task<bool> CheckExchange(Exchange exchange)
         {
             return GetService(exchange.SellCurrency).CheckExchange(exchange);
         }

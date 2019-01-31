@@ -156,8 +156,9 @@ namespace ExchangeBroker.Services
             }
         }
 
-        public async Task CheckExchange(Exchange exchange)
+        public async Task<bool> CheckExchange(Exchange exchange)
         {
+            bool changed = false;
             try
             {
                 var sw = new Stopwatch();
@@ -165,17 +166,23 @@ namespace ExchangeBroker.Services
 
                 var status = await checker.GetTransactionStatusesByAddress(exchange.PayWalletAddress, tryCount, delayMs);
                 if (status == null || status.Status == TransactionStatus.NotFound)
-                    return;
+                    return changed;
 
                 decimal receivedAmount = BitcoinConvert.FromAtomicUnits(status.Amount);
 
+                PaymentStatus newStatus = PaymentStatus.Received;
                 if (status.Status == TransactionStatus.DoubleSpent)
-                    exchange.Status = PaymentStatus.DoubleSpend;
-                else
-                    exchange.Status = PaymentStatus.Received;
+                    newStatus = PaymentStatus.DoubleSpend;
 
-                exchange.ReceivedConfirmations = status.Confirmations;
-                exchange.ReceivedAmount = receivedAmount;
+                if (exchange.Status != newStatus ||
+                    exchange.ReceivedConfirmations != status.Confirmations ||
+                    exchange.ReceivedAmount != receivedAmount)
+                {
+                    exchange.Status = newStatus;
+                    exchange.ReceivedConfirmations = status.Confirmations;
+                    exchange.ReceivedAmount = receivedAmount;
+                    changed = true;
+                }
 
                 if (State != WatchableServiceState.OK)
                     SetState(WatchableServiceState.OK);
@@ -198,6 +205,7 @@ namespace ExchangeBroker.Services
             {
                 LastOperationTime = DateTime.UtcNow;
             }
+            return changed;
         }
 
         public string GetUri(Payment payment)

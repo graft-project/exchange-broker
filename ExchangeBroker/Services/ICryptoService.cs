@@ -1,7 +1,4 @@
 ﻿using ExchangeBroker.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ExchangeBroker.Services
@@ -15,6 +12,6 @@ namespace ExchangeBroker.Services
         string GetUri(Exchange exchange);
 
         Task CheckPayment(Payment payment);
-        Task CheckExchange(Exchange exchange);
+        Task<bool> CheckExchange(Exchange exchange);
     }
 }
