@@ -21,12 +21,12 @@ _Note:_ In order to GraftNode (also called the cryptonode) work properly 28680 (
 - OS Linux, version - Needs Ubuntu 18.04 LTS Bionic (you have to install it yourself), Connections established from the Node are using P2P network. In order to work properly 28680 port should be opened for incoming and outgoing traffic.
 - SMTP Server credentials (you have to do it yourself)
 - MySQL server, version - was tested with 8.0.13
-- .Net Core 2.1 SDK  
+- .Net Core 2.1 SDK
 - Git
-- Nginx 
-- 2 Bitcoin Wallet in testnet network - for internal transaction and for test-buyer (we propose for using App Copay).
-- 2 Ethereum wallet in Ropsten network - for internal transaction and for test-buyer (we propose for using App Walleth).  
-- 1 Graft wallet in RTA testnet network (we propose for using App Graft Wallet).
+- Nginx
+- 2 Bitcoin Wallets in the testnet network - for internal transaction and for test-buyer (we propose using the App Copay).
+- 2 Ethereum wallets in the Ropsten network - for internal transaction and for test-buyer (we propose using the App Walleth).  
+- 1 Graft wallet in the RTA testnet network (we propose using the App Graft Wallet).
 
 # Install Prerequisites
 
@@ -83,7 +83,7 @@ sudo systemctl start mysql
 ```
 **3.6. Login to mysql as root (password was created in 3.3):**
 ```
- sudo mysql -u root -p 
+ sudo mysql -u root -p
 ```
 You stay in mysql>
 
@@ -144,7 +144,7 @@ exit
 ```
 Include MySQL to  autorun:
 ```
-sudo systemctl enable mysql 
+sudo systemctl enable mysql
 ```
 ### 4.   **Nginx** setup
 > **_If nginx was installed for Payment Gateway you need doing only command marked bold._**
