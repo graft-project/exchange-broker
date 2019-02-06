@@ -64,6 +64,8 @@ namespace ExchangeBroker.Models.ExchangeViewModels
         [DisplayFormat(DataFormatString = "{0:N9}", ApplyFormatInEditMode = true)]
         public decimal ReceivedAmount { get; set; }
 
+        [Display(Name = "Buyer Transaction ID")]
+        public string BuyerTransactionId { get; set; }
 
         [Display(Name = "Buyer Transaction Status")]
         public GraftTransactionStatus BuyerTransactionStatus { get; set; }

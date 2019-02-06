@@ -47,6 +47,7 @@ namespace ExchangeBroker.Controllers
                     PayAddressIndex = p.PayAddressIndex,
                     ReceivedConfirmations = p.ReceivedConfirmations,
                     ReceivedAmount = p.ReceivedAmount,
+                    BuyerTransactionId = p.BuyerTransactionId,
                     BuyerTransactionStatus = p.BuyerTransactionStatus
                 })
                 .AsQueryable();
@@ -111,6 +112,7 @@ namespace ExchangeBroker.Controllers
                 PayAddressIndex = exchange.PayAddressIndex,
                 ReceivedConfirmations = exchange.ReceivedConfirmations,
                 ReceivedAmount = exchange.ReceivedAmount,
+                BuyerTransactionId = exchange.BuyerTransactionId,
                 BuyerTransactionStatus = exchange.BuyerTransactionStatus
             });
         }
