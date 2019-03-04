@@ -20,9 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Graft.Net\BitcoinLib\BitcoinLib.csproj" />
+    <ProjectReference Include="..\Graft.Net\DAPI\DAPI.csproj" />
     <ProjectReference Include="..\Graft.Net\EthereumLib\EthereumLib.csproj" />
-    <ProjectReference Include="..\Graft.Net\GraftLib\GraftLib.csproj" />
     <ProjectReference Include="..\Graft.Net\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Graft.Net\WalletRpc\WalletRpc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -17,10 +17,7 @@ namespace ExchangeBroker.Services
 {
     public class BitcoinService : WatchableService, IBitcoinService
     {
-        private static decimal totalAmountPaymentBySession = 0;
         private static decimal totalAmountExchangeBySession = 0;
-
-        private static long totalPaymentsBySession = 0;
         private static long totalExchangesBySession = 0;
 
         static ILogger logger;
@@ -46,14 +43,6 @@ namespace ExchangeBroker.Services
 
             logger = options.LoggerFactory?.CreateLogger(nameof(BitcoinService));
 
-            int lastPaymentIndex = 0;
-            if (db.Payment.Any())
-            {
-                lastPaymentIndex = db.Payment
-                    .Where(t => t.PayCurrency == "BTC")
-                    .Max(t => t.PayAddressIndex);
-            }
-
             int lastExchangeIndex = 0;
             if (db.Exchange.Any())
             {
@@ -62,7 +51,7 @@ namespace ExchangeBroker.Services
                     .Max(t => t.PayAddressIndex);
             }
 
-            index = Math.Max(lastPaymentIndex, lastExchangeIndex) + 1;
+            index = lastExchangeIndex + 1;
 
             bitcoinWallet = new BitcoinWallet(bitcoinExtPubKeyString, isTestNetwork);
             checker = new CheckTransactionService(isTestNetwork);
@@ -80,21 +69,6 @@ namespace ExchangeBroker.Services
             SetState(WatchableServiceState.OK, "Service instantiated");
         }
 
-        public Task CreateAddress(Payment payment)
-        {
-            lock (bitcoinWallet)
-            {
-                payment.PayWalletAddress = bitcoinWallet.GetNewAddress(index);
-                payment.PayAddressIndex = index++;
-            }
-
-            Metrics[$"Last payment address"] = payment.PayWalletAddress;
-
-            Metrics[$"Last address index"] = index.ToString();
-
-            return Task.CompletedTask;
-        }
-
         public Task CreateAddress(Exchange exchange)
         {
             lock (bitcoinWallet)
@@ -108,52 +82,6 @@ namespace ExchangeBroker.Services
             Metrics[$"Last address index"] = index.ToString();
 
             return Task.CompletedTask;
-        }
-
-        public async Task CheckPayment(Payment payment)
-        {
-            try
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-
-                var status = await checker.GetTransactionStatusesByAddress(payment.PayWalletAddress, tryCount, delayMs);
-                if (status == null || status.Status == TransactionStatus.NotFound)
-                    return;
-
-                decimal receivedAmount = BitcoinConvert.FromAtomicUnits(status.Amount);
-
-                if (status.Status == TransactionStatus.DoubleSpent)
-                    payment.Status = PaymentStatus.DoubleSpend;
-                else if ((payment.PayAmount - receivedAmount) * payment.PayToSaleRate > 0.01M)
-                    payment.Status = PaymentStatus.NotEnoughAmount;
-                else
-                    payment.Status = PaymentStatus.Received;
-
-                payment.ReceivedConfirmations = status.Confirmations;
-                payment.ReceivedAmount = receivedAmount;
-
-                if (State != WatchableServiceState.OK)
-                    SetState(WatchableServiceState.OK);
-
-                sw.Stop();
-                UpdateStopwatchMetrics(sw, true);
-
-                totalPaymentsBySession++;
-                Metrics[$"Total Payments By Session"] = totalPaymentsBySession.ToString();
-
-                totalAmountPaymentBySession += payment.ReceivedAmount;
-                Metrics[$"Total Received Payments By Session"] = totalAmountPaymentBySession.ToString();
-            }
-            catch (Exception ex)
-            {
-                SetState(WatchableServiceState.Error, ex.Message);
-                throw;
-            }
-            finally
-            {
-                LastOperationTime = DateTime.UtcNow;
-            }
         }
 
         public async Task<bool> CheckExchange(Exchange exchange)
@@ -206,11 +134,6 @@ namespace ExchangeBroker.Services
                 LastOperationTime = DateTime.UtcNow;
             }
             return changed;
-        }
-
-        public string GetUri(Payment payment)
-        {
-            return $"bitcoin:{payment.PayWalletAddress}?amount={payment.PayAmount.ToString(CultureInfo.InvariantCulture)}";
         }
 
         public string GetUri(Exchange exchange)

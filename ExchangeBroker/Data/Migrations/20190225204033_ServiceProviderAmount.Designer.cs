@@ -3,14 +3,16 @@ using System;
 using ExchangeBroker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ExchangeBroker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190225204033_ServiceProviderAmount")]
+    partial class ServiceProviderAmount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,6 +82,10 @@ namespace ExchangeBroker.Data.Migrations
                     b.Property<string>("BuyCurrency")
                         .IsRequired();
 
+                    b.Property<string>("BuyerTransactionId");
+
+                    b.Property<int>("BuyerTransactionStatus");
+
                     b.Property<string>("BuyerWallet")
                         .IsRequired();
 
@@ -88,22 +94,6 @@ namespace ExchangeBroker.Data.Migrations
                     b.Property<decimal>("ExchangeBrokerFee");
 
                     b.Property<decimal>("GraftToUsdRate");
-
-                    b.Property<int>("InBlockNumber");
-
-                    b.Property<string>("InTxId");
-
-                    b.Property<sbyte>("InTxStatus");
-
-                    b.Property<string>("InTxStatusDescription");
-
-                    b.Property<int>("OutBlockNumber");
-
-                    b.Property<string>("OutTxId");
-
-                    b.Property<sbyte>("OutTxStatus");
-
-                    b.Property<string>("OutTxStatusDescription");
 
                     b.Property<int>("PayAddressIndex");
 
@@ -128,6 +118,54 @@ namespace ExchangeBroker.Data.Migrations
                     b.ToTable("Exchange");
                 });
 
+            modelBuilder.Entity("ExchangeBroker.Models.Payment", b =>
+                {
+                    b.Property<string>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<DateTime>("CreatedAt");
+
+                    b.Property<decimal>("ExchangeBrokerFee");
+
+                    b.Property<decimal>("GraftToSaleRate");
+
+                    b.Property<int>("PayAddressIndex");
+
+                    b.Property<decimal>("PayAmount");
+
+                    b.Property<string>("PayCurrency")
+                        .IsRequired();
+
+                    b.Property<decimal>("PayToSaleRate");
+
+                    b.Property<string>("PayWalletAddress")
+                        .IsRequired();
+
+                    b.Property<string>("ProviderTransactionId");
+
+                    b.Property<int>("ProviderTransactionStatus");
+
+                    b.Property<decimal>("ReceivedAmount");
+
+                    b.Property<int>("ReceivedConfirmations");
+
+                    b.Property<decimal>("SaleAmount");
+
+                    b.Property<string>("SaleCurrency")
+                        .IsRequired();
+
+                    b.Property<decimal>("ServiceProviderAmount");
+
+                    b.Property<string>("ServiceProviderWallet");
+
+                    b.Property<sbyte>("Status");
+
+                    b.HasKey("PaymentId");
+
+                    b.ToTable("Payment");
+                });
+
             modelBuilder.Entity("Graft.Infrastructure.AccountPool.AccountPoolItem", b =>
                 {
                     b.Property<string>("Id")
@@ -147,6 +185,28 @@ namespace ExchangeBroker.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AccountPools");
+                });
+
+            modelBuilder.Entity("GraftLib.Models.TransactionRequest", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Address");
+
+                    b.Property<ulong>("Amount");
+
+                    b.Property<DateTime>("LastUpdatedTime")
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.Property<int>("Status")
+                        .IsConcurrencyToken();
+
+                    b.Property<string>("TxId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransactionRequests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

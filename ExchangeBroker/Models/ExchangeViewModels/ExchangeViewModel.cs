@@ -68,6 +68,6 @@ namespace ExchangeBroker.Models.ExchangeViewModels
         public string BuyerTransactionId { get; set; }
 
         [Display(Name = "Buyer Transaction Status")]
-        public GraftTransactionStatus BuyerTransactionStatus { get; set; }
+        public PaymentStatus BuyerTransactionStatus { get; set; }
     }
 }

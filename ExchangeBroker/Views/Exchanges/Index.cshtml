@@ -23,7 +23,7 @@
         <div class="form-group">
             <label class="control-label">Buyer Transaction Status</label>
             <br />
-            <select name="buyerTranStatus" asp-for="@Model.RouteValue["buyerTranStatus"]" class="form-control" asp-items="Html.GetEnumSelectList<GraftTransactionStatus>()">
+            <select name="buyerTranStatus" asp-for="@Model.RouteValue["buyerTranStatus"]" class="form-control" asp-items="Html.GetEnumSelectList<PaymentStatus>()">
                 <option selected="selected">---</option>
             </select>
         </div>

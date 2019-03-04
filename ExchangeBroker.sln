@@ -11,11 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WalletRpc", "Graft.Net\Wall
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Graft.Net\Infrastructure\Infrastructure.csproj", "{AA3D8D7D-FE13-4807-B04D-FD402C3FB423}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraftLib", "Graft.Net\GraftLib\GraftLib.csproj", "{0AEF4A85-5CCA-4C15-AEE7-6D4F3BCCC820}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAPI", "Graft.Net\DAPI\DAPI.csproj", "{CEA857E3-7415-4607-9207-8D6A64E78FFE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EthereumLib", "Graft.Net\EthereumLib\EthereumLib.csproj", "{DE1C22AB-76AD-4077-8F17-41BBA37914B1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraftLib", "Graft.Net\GraftLib\GraftLib.csproj", "{8C87C080-51C9-46DF-8C7C-5A1AA74FF165}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,10 +39,6 @@ Global
 		{AA3D8D7D-FE13-4807-B04D-FD402C3FB423}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA3D8D7D-FE13-4807-B04D-FD402C3FB423}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA3D8D7D-FE13-4807-B04D-FD402C3FB423}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0AEF4A85-5CCA-4C15-AEE7-6D4F3BCCC820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0AEF4A85-5CCA-4C15-AEE7-6D4F3BCCC820}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0AEF4A85-5CCA-4C15-AEE7-6D4F3BCCC820}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0AEF4A85-5CCA-4C15-AEE7-6D4F3BCCC820}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CEA857E3-7415-4607-9207-8D6A64E78FFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CEA857E3-7415-4607-9207-8D6A64E78FFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEA857E3-7415-4607-9207-8D6A64E78FFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +47,10 @@ Global
 		{DE1C22AB-76AD-4077-8F17-41BBA37914B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE1C22AB-76AD-4077-8F17-41BBA37914B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE1C22AB-76AD-4077-8F17-41BBA37914B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C87C080-51C9-46DF-8C7C-5A1AA74FF165}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C87C080-51C9-46DF-8C7C-5A1AA74FF165}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C87C080-51C9-46DF-8C7C-5A1AA74FF165}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C87C080-51C9-46DF-8C7C-5A1AA74FF165}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

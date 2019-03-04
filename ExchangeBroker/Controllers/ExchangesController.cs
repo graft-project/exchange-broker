@@ -23,7 +23,7 @@ namespace ExchangeBroker.Controllers
         }
 
         public async Task<IActionResult> Index(string filter, 
-            PaymentStatus? status, GraftTransactionStatus? buyerTranStatus,
+            PaymentStatus? status, PaymentStatus? buyerTranStatus,
             DateTime? fromDate, DateTime? toDate,
             int page = 1, string sortExpression = "-CreatedAt")
         {
@@ -47,8 +47,8 @@ namespace ExchangeBroker.Controllers
                     PayAddressIndex = p.PayAddressIndex,
                     ReceivedConfirmations = p.ReceivedConfirmations,
                     ReceivedAmount = p.ReceivedAmount,
-                    BuyerTransactionId = p.BuyerTransactionId,
-                    BuyerTransactionStatus = p.BuyerTransactionStatus
+                    BuyerTransactionId = p.OutTxId,
+                    BuyerTransactionStatus = p.OutTxStatus
                 })
                 .AsQueryable();
 
@@ -112,8 +112,8 @@ namespace ExchangeBroker.Controllers
                 PayAddressIndex = exchange.PayAddressIndex,
                 ReceivedConfirmations = exchange.ReceivedConfirmations,
                 ReceivedAmount = exchange.ReceivedAmount,
-                BuyerTransactionId = exchange.BuyerTransactionId,
-                BuyerTransactionStatus = exchange.BuyerTransactionStatus
+                BuyerTransactionId = exchange.OutTxId,
+                BuyerTransactionStatus = exchange.OutTxStatus
             });
         }
 

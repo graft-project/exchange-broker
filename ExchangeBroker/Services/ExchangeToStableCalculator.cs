@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace ExchangeBroker.Services
 {
-    public class ExchangeCalculator
+    public class ExchangeToStableCalculator
     {
-        internal static async Task<Exchange> Create(BrokerExchangeParams model, 
+        internal static async Task<Exchange> Create(BrokerExchangeToStableParams model, 
             IRateCache rateCache, ExchangeServiceConfiguration settings)
         {
             var log = new List<EventItem>
@@ -20,54 +20,14 @@ namespace ExchangeBroker.Services
                 new EventItem($"Started exchange calculation")
             };
 
-            log.Add(new EventItem($"Requesting {model.SellCurrency} rate..."));
-            decimal sellRate = await rateCache.GetRateToUsd(model.SellCurrency);
-            log.Add(new EventItem($"Received {model.SellCurrency} rate: {sellRate} USD"));
-
             log.Add(new EventItem($"Requesting GRFT rate..."));
             decimal graftRate = await rateCache.GetRateToUsd("GRFT");
             log.Add(new EventItem($"Received GRFT rate: {graftRate} USD"));
 
-            decimal sellAmount = 0;
-            decimal graftAmount = 0;
-            decimal buyerAmount = 0;
-            decimal feeAmount = 0;
             decimal fee = settings.ExchangeBrokerFee;
-
-            if (!string.IsNullOrWhiteSpace(model.FiatCurrency))
-            {
-                if (model.SellFiatAmount > 0)
-                {
-                    sellAmount = model.SellFiatAmount / sellRate;
-                    graftAmount = model.SellFiatAmount / graftRate;
-                    feeAmount = graftAmount * fee;
-                    buyerAmount = graftAmount - feeAmount;
-                }
-                else
-                {
-                    buyerAmount = model.BuyFiatAmount / graftRate;
-                    graftAmount = buyerAmount / (1 - fee);
-                    feeAmount = graftAmount - buyerAmount;
-                    sellAmount = graftAmount * graftRate / sellRate;
-                }
-            }
-            else
-            {
-                if (model.SellAmount > 0)
-                {
-                    sellAmount = model.SellAmount;
-                    graftAmount = sellAmount * sellRate / graftRate;
-                    feeAmount = graftAmount * fee;
-                    buyerAmount = graftAmount - feeAmount;
-                }
-                else
-                {
-                    buyerAmount = model.BuyAmount;
-                    graftAmount = buyerAmount / (1 - fee);
-                    feeAmount = graftAmount - buyerAmount;
-                    sellAmount = graftAmount * graftRate / sellRate;
-                }
-            }
+            decimal usdAmount = graftRate * model.SellAmount;
+            decimal feeAmount = usdAmount * fee;
+            decimal buyerAmount = usdAmount - feeAmount;
 
             var exchange = new Exchange
             {
@@ -75,13 +35,13 @@ namespace ExchangeBroker.Services
                 CreatedAt = DateTime.UtcNow,
                 Status = PaymentStatus.Waiting,
 
-                SellAmount = sellAmount,
+                SellAmount = model.SellAmount,
                 SellCurrency = model.SellCurrency,
 
                 BuyAmount = buyerAmount,
-                BuyCurrency = model.BuyCurrency,
+                BuyCurrency = "USDT",
 
-                SellToUsdRate = sellRate,
+                SellToUsdRate = 1M,
                 GraftToUsdRate = graftRate,
 
                 ExchangeBrokerFee = feeAmount,

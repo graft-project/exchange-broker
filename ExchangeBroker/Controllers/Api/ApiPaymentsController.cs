@@ -18,19 +18,19 @@ namespace ExchangeBroker.Controllers.Api
         readonly ApplicationDbContext _db;
         readonly IRateCache _rateCache;
         readonly IExchangeService _exchangeService;
-        readonly IPaymentService _paymentService;
+        readonly IExchangeToStableService _exchangeToStableService;
 
         public ApiPaymentsController(ILoggerFactory loggerFactory,
             ApplicationDbContext db,
             IRateCache rateCache,
             IExchangeService exchangeService,
-            IPaymentService paymentService)
+            IExchangeToStableService exchangeToStableService)
         {
             _logger = loggerFactory.CreateLogger(nameof(ApiPaymentsController));
             _db = db;
             _rateCache = rateCache;
             _exchangeService = exchangeService;
-            _paymentService = paymentService;
+            _exchangeToStableService = exchangeToStableService;
         }
 
         [HttpPost]
@@ -42,18 +42,10 @@ namespace ExchangeBroker.Controllers.Api
         }
 
         [HttpPost]
-        [Route("Sale")]
-        public async Task<IActionResult> Sale([FromBody] BrokerSaleParams model)
+        [Route("ExchangeToStable")]
+        public async Task<IActionResult> ExchangeToStable([FromBody] BrokerExchangeToStableParams model)
         {
-            var res = await _paymentService.Sale(model);
-            return Ok(res);
-        }
-
-        [HttpPost]
-        [Route("SaleStatus")]
-        public async Task<IActionResult> SaleStatus([FromBody] BrokerSaleStatusParams model)
-        {
-            var res = await _paymentService.SaleStatus(model);
+            var res = await _exchangeToStableService.Exchange(model);
             return Ok(res);
         }
 
@@ -62,7 +54,15 @@ namespace ExchangeBroker.Controllers.Api
         public async Task<IActionResult> ExchangeStatus([FromBody] BrokerExchangeStatusParams model)
         {
             var res = await _exchangeService.ExchangeStatus(model.ExchangeId);
-            return Ok(res); 
+            return Ok(res);
+        }
+
+        [HttpPost]
+        [Route("ExchangeToStableStatus")]
+        public async Task<IActionResult> ExchangeToStableStatus([FromBody] BrokerExchangeStatusParams model)
+        {
+            var res = await _exchangeToStableService.ExchangeStatus(model.ExchangeId);
+            return Ok(res);
         }
 
         [HttpGet]

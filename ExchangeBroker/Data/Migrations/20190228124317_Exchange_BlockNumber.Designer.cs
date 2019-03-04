@@ -3,14 +3,16 @@ using System;
 using ExchangeBroker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ExchangeBroker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190228124317_Exchange_BlockNumber")]
+    partial class Exchange_BlockNumber
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,10 +77,18 @@ namespace ExchangeBroker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("varchar(128)");
 
+                    b.Property<int>("BlockNumber");
+
                     b.Property<decimal>("BuyAmount");
 
                     b.Property<string>("BuyCurrency")
                         .IsRequired();
+
+                    b.Property<string>("BuyerTransactionId");
+
+                    b.Property<sbyte>("BuyerTransactionStatus");
+
+                    b.Property<string>("BuyerTransactionStatusDescription");
 
                     b.Property<string>("BuyerWallet")
                         .IsRequired();
@@ -88,22 +98,6 @@ namespace ExchangeBroker.Data.Migrations
                     b.Property<decimal>("ExchangeBrokerFee");
 
                     b.Property<decimal>("GraftToUsdRate");
-
-                    b.Property<int>("InBlockNumber");
-
-                    b.Property<string>("InTxId");
-
-                    b.Property<sbyte>("InTxStatus");
-
-                    b.Property<string>("InTxStatusDescription");
-
-                    b.Property<int>("OutBlockNumber");
-
-                    b.Property<string>("OutTxId");
-
-                    b.Property<sbyte>("OutTxStatus");
-
-                    b.Property<string>("OutTxStatusDescription");
 
                     b.Property<int>("PayAddressIndex");
 

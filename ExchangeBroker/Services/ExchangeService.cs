@@ -2,6 +2,7 @@
 using ExchangeBroker.Extensions;
 using ExchangeBroker.Models;
 using ExchangeBroker.Models.Options;
+using Graft.DAPI;
 using Graft.Infrastructure;
 using Graft.Infrastructure.Broker;
 using Graft.Infrastructure.Rate;
@@ -10,7 +11,9 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using WalletRpc;
 
 namespace ExchangeBroker.Services
 {
@@ -21,8 +24,9 @@ namespace ExchangeBroker.Services
         readonly IRateCache _rateCache;
         readonly IMemoryCache _cache;
         readonly ICryptoProviderService _cryptoProviderService;
-        readonly IGraftWalletService _wallet;
-        readonly PaymentServiceConfiguration _settings;
+        readonly GraftDapi _dapi;
+        readonly WalletPool _walletPool;
+        readonly ExchangeServiceConfiguration _settings;
 
         public ExchangeService(ILoggerFactory loggerFactory,
             ApplicationDbContext db,
@@ -30,20 +34,23 @@ namespace ExchangeBroker.Services
             IRateCache rateCache,
             IMemoryCache cache,
             ICryptoProviderService cryptoProviderService,
-            IGraftWalletService wallet)
+            GraftDapi dapi,
+            WalletPool walletPool)
         {
             _settings = configuration
-               .GetSection("PaymentService")
-               .Get<PaymentServiceConfiguration>();
+               .GetSection("ExchangeService")
+               .Get<ExchangeServiceConfiguration>();
 
             _logger = loggerFactory.CreateLogger(nameof(ExchangeService));
             _db = db;
             _rateCache = rateCache;
             _cache = cache;
             _cryptoProviderService = cryptoProviderService;
-            _wallet = wallet;
+            _dapi = dapi;
+            _walletPool = walletPool;
         }
 
+        // convert cryptocurrency payment to GRFT
         public async Task<BrokerExchangeResult> Exchange(BrokerExchangeParams model)
         {
             _logger.LogInformation("Exchange: {@params}", model);
@@ -96,8 +103,10 @@ namespace ExchangeBroker.Services
             if (string.IsNullOrWhiteSpace(model.BuyCurrency))
                 throw new ApiException(ErrorCode.BuyCurrencyEmpty);
 
-            if (model.BuyCurrency != "GRFT")
-                throw new ApiException(ErrorCode.BuyCurrencyNotSupported, model.BuyCurrency);
+            if (!((model.BuyCurrency == "GRFT" && model.SellCurrency == "BTC") ||
+                (model.BuyCurrency == "GRFT" && model.SellCurrency == "ETH") ||
+                (model.BuyCurrency == "USDT" && model.SellCurrency == "GRFT")))
+                throw new ApiException(ErrorCode.CurrencyPairNotSupported, $"{model.SellCurrency}->{model.BuyCurrency}");
 
             if (string.IsNullOrWhiteSpace(model.WalletAddress))
                 throw new ApiException(ErrorCode.WalletEmpty);
@@ -118,10 +127,9 @@ namespace ExchangeBroker.Services
                     throw new ApiException(ErrorCode.ExchangeNotFoundOrExpired);
             }
 
-
-            //todo - move this check into a background thread
+            if (exchange.OutTxId == null)
             {
-                if (await _cryptoProviderService.CheckExchange(exchange))
+                if (await _cryptoProviderService.CheckExchange(exchange).ConfigureAwait(false))
                 {
                     if (exchange.Status == PaymentStatus.Received)
                     {
@@ -131,7 +139,7 @@ namespace ExchangeBroker.Services
                         // so we need to recalculate all amounts
                         ExchangeCalculator.Recalc(exchange, _settings);
 
-                        await _wallet.ProcessExchange(exchange, _db);
+                        await PayToServiceProvider(exchange);
                     }
 
                     _db.Exchange.Update(exchange);
@@ -142,6 +150,104 @@ namespace ExchangeBroker.Services
             var res = GetExchangeResult(exchange);
             _logger.LogInformation("ExchangeStatus Result: {@params}", res);
             return res;
+        }
+
+        async Task PayToServiceProvider(Exchange exchange)
+        {
+            if (exchange.OutTxId != null)
+                throw new ApiException(ErrorCode.PaymentAlreadyMade);
+            exchange.OutTxId = Guid.NewGuid().ToString();
+
+            try
+            {
+                var wallet = _walletPool.GetPayWallet(exchange.BuyAmount);
+
+
+                // sale -----------------------------------------
+                var dapiParams = new DapiSaleParams
+                {
+                    PaymentId = exchange.OutTxId,
+                    SaleDetails = "sale details string",
+                    Address = exchange.BuyerWallet,
+                    Amount = GraftConvert.ToAtomicUnits(exchange.BuyAmount)
+                };
+                var saleResult = await _dapi.Sale(dapiParams).ConfigureAwait(false);
+
+
+                // sale_status -----------------------------------------
+                var dapiStatusParams = new DapiSaleStatusParams
+                {
+                    PaymentId = exchange.OutTxId,
+                    BlockNumber = saleResult.BlockNumber
+                };
+                var saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
+
+
+                // sale_details -----------------------------------------
+                var dapiSaleDetailsParams = new DapiSaleDetailsParams
+                {
+                    PaymentId = exchange.OutTxId,
+                    BlockNumber = saleResult.BlockNumber
+                };
+                var saleDetailsResult = await _dapi.SaleDetails(dapiSaleDetailsParams);
+
+
+                // prepare payment
+                var destinations = new List<Destination>();
+
+                // add fee for each node in the AuthSample
+                ulong totalAuthSampleFee = 0;
+                foreach (var item in saleDetailsResult.AuthSample)
+                {
+                    destinations.Add(new Destination { Amount = item.Fee, Address = item.Address });
+                    totalAuthSampleFee += item.Fee;
+                }
+
+                // destination - ServiceProvider
+                destinations.Add(new Destination
+                {
+                    Amount = dapiParams.Amount - totalAuthSampleFee,
+                    Address = dapiParams.Address
+                });
+
+                var transferParams = new TransferParams
+                {
+                    Destinations = destinations.ToArray(),
+                    DoNotRelay = true,
+                    GetTxHex = true,
+                    GetTxMetadata = true,
+                    GetTxKey = true
+                };
+
+                var transferResult = await wallet.TransferRta(transferParams);
+
+                // DAPI pay
+                var payParams = new DapiPayParams
+                {
+                    Address = dapiParams.Address,
+                    PaymentId = dapiParams.PaymentId,
+                    BlockNumber = saleResult.BlockNumber,
+                    Amount = dapiParams.Amount,
+                    Transactions = new string[] { transferResult.TxBlob }
+                };
+
+                var payResult = await _dapi.Pay(payParams);
+
+                saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
+                while ((int)saleStatusResult.Status < (int)DapiSaleStatus.Success)
+                {
+                    saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
+                    await Task.Delay(1000);
+                }
+
+                exchange.OutBlockNumber = saleResult.BlockNumber;
+                exchange.OutTxStatus = GraftDapi.DapiStatusToPaymentStatus(saleStatusResult.Status);
+            }
+            catch (Exception ex)
+            {
+                exchange.OutTxStatus = PaymentStatus.Fail;
+                exchange.OutTxStatusDescription = ex.Message;
+            }
         }
 
         BrokerExchangeResult GetExchangeResult(Exchange exchange)

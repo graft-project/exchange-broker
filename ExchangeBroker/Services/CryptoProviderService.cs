@@ -1,8 +1,7 @@
-﻿using System;
+﻿using ExchangeBroker.Models;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using ExchangeBroker.Models;
 
 namespace ExchangeBroker.Services
 {
@@ -12,10 +11,11 @@ namespace ExchangeBroker.Services
 
         public CryptoProviderService(IBitcoinService bitcoinService, IEthereumService ethereumService)
         {
-            registeredServices = new Dictionary<string, ICryptoService>();
-
-            registeredServices.Add("BTC", bitcoinService);
-            registeredServices.Add("ETH", ethereumService);
+            registeredServices = new Dictionary<string, ICryptoService>
+            {
+                { "BTC", bitcoinService },
+                { "ETH", ethereumService }
+            };
         }
 
         public Task<bool> CheckExchange(Exchange exchange)
@@ -23,24 +23,9 @@ namespace ExchangeBroker.Services
             return GetService(exchange.SellCurrency).CheckExchange(exchange);
         }
 
-        public Task CheckPayment(Payment payment)
-        {
-            return GetService(payment.PayCurrency).CheckPayment(payment);
-        }
-
-        public Task CreateAddress(Payment payment)
-        {
-            return GetService(payment.PayCurrency).CreateAddress(payment);
-        }
-
         public Task CreateAddress(Exchange exchange)
         {
             return GetService(exchange.SellCurrency).CreateAddress(exchange);
-        }
-
-        public string GetUri(Payment payment)
-        {
-            return GetService(payment.PayCurrency).GetUri(payment);
         }
 
         public string GetUri(Exchange exchange)

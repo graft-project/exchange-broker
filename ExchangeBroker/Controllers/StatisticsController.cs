@@ -21,24 +21,24 @@ namespace ExchangeBroker.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string variant = null)
+        public async Task<IActionResult> Index()
         {
             ISearchModel model;
 
-            if (variant != null && variant == "Payments")
-            {
-                model = new SearchModelPayments
-                {
-                    Data = await _context.Payment.ToListAsync()
-                };
-            }
-            else
-            {
+            //if (variant != null && variant == "Payments")
+            //{
+            //    model = new SearchModelPayments
+            //    {
+            //        Data = await _context.Payment.ToListAsync()
+            //    };
+            //}
+            //else
+            //{
                 model = new SearchModelExchange
                 {
                     Data = await _context.Exchange.ToListAsync()
                 };
-            }
+            //}
 
             return View(model);
         }
@@ -134,59 +134,59 @@ namespace ExchangeBroker.Controllers
         public int TotalCount => Data.Count;
     }
 
-    public class SearchModelPayments : ISearchModel
-    {
-        public string ItemTypeTo { get => "Payments"; }
+    //public class SearchModelPayments : ISearchModel
+    //{
+    //    public string ItemTypeTo { get => "Payments"; }
 
-        public int GetStatusCount(Graft.Infrastructure.PaymentStatus status)
-        {
-            return Data.Count(x => x.Status == status);
-        }
+    //    public int GetStatusCount(Graft.Infrastructure.PaymentStatus status)
+    //    {
+    //        return Data.Count(x => x.Status == status);
+    //    }
 
-        public int FailedCount
-        {
-            get => Data.Count(x => new[]
-            {
-                Graft.Infrastructure.PaymentStatus.TimedOut,
-                Graft.Infrastructure.PaymentStatus.RejectedByWallet,
-                Graft.Infrastructure.PaymentStatus.RejectedByPOS,
-                Graft.Infrastructure.PaymentStatus.NotEnoughAmount,
-                Graft.Infrastructure.PaymentStatus.Fail,
-                Graft.Infrastructure.PaymentStatus.DoubleSpend
-            }.Contains(x.Status));
-        }
+    //    public int FailedCount
+    //    {
+    //        get => Data.Count(x => new[]
+    //        {
+    //            Graft.Infrastructure.PaymentStatus.TimedOut,
+    //            Graft.Infrastructure.PaymentStatus.RejectedByWallet,
+    //            Graft.Infrastructure.PaymentStatus.RejectedByPOS,
+    //            Graft.Infrastructure.PaymentStatus.NotEnoughAmount,
+    //            Graft.Infrastructure.PaymentStatus.Fail,
+    //            Graft.Infrastructure.PaymentStatus.DoubleSpend
+    //        }.Contains(x.Status));
+    //    }
 
-        public int InProgressCount
-        {
-            get => Data.Count(x => new[]
-            {
-                Graft.Infrastructure.PaymentStatus.InProgress,
-                Graft.Infrastructure.PaymentStatus.New,
-                Graft.Infrastructure.PaymentStatus.Waiting
-            }.Contains(x.Status));
-        }
+    //    public int InProgressCount
+    //    {
+    //        get => Data.Count(x => new[]
+    //        {
+    //            Graft.Infrastructure.PaymentStatus.InProgress,
+    //            Graft.Infrastructure.PaymentStatus.New,
+    //            Graft.Infrastructure.PaymentStatus.Waiting
+    //        }.Contains(x.Status));
+    //    }
 
-        public int SuccessfulCount
-        {
-            get => Data.Count(x => new[]
-            {
-                Graft.Infrastructure.PaymentStatus.Received,
-                Graft.Infrastructure.PaymentStatus.Confirmed
-            }.Contains(x.Status));
-        }
+    //    public int SuccessfulCount
+    //    {
+    //        get => Data.Count(x => new[]
+    //        {
+    //            Graft.Infrastructure.PaymentStatus.Received,
+    //            Graft.Infrastructure.PaymentStatus.Confirmed
+    //        }.Contains(x.Status));
+    //    }
 
-        public Dictionary<string, int> DataSortedByDays
-        {
-            get => Data.GroupBy(x => x.CreatedAt.Date).ToDictionary(x => x.Key.ToShortDateString(), y => y.Count());
-        }
+    //    public Dictionary<string, int> DataSortedByDays
+    //    {
+    //        get => Data.GroupBy(x => x.CreatedAt.Date).ToDictionary(x => x.Key.ToShortDateString(), y => y.Count());
+    //    }
 
-        public Dictionary<string, int> DataSortedByPayment
-        {
-            get => Data.OrderBy(x => x.PayAmount).GroupBy(x => Math.Round(x.PayAmount, 5)).ToDictionary(x => $"{x.Key} BTC", y => y.Count());
-        }
+    //    public Dictionary<string, int> DataSortedByPayment
+    //    {
+    //        get => Data.OrderBy(x => x.PayAmount).GroupBy(x => Math.Round(x.PayAmount, 5)).ToDictionary(x => $"{x.Key} BTC", y => y.Count());
+    //    }
 
-        public List<Payment> Data { get; set; } = new List<Payment>();
+    //    //public List<Payment> Data { get; set; } = new List<Payment>();
 
-        public int TotalCount => Data.Count;
-    }
+    //    public int TotalCount => Data.Count;
+    //}
 }

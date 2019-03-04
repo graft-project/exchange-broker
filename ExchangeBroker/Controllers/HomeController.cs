@@ -7,6 +7,8 @@ namespace ExchangeBroker.Controllers
         public IActionResult Index()
         {
             return RedirectToAction("Index", "DemoTerminalApp");
+            //return RedirectToAction("Index", "AdminDashboard");
+            //return RedirectToAction("Index", "Exchanges");
         }
     }
 }

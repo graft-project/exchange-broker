@@ -7,7 +7,6 @@ namespace ExchangeBroker.Services
 {
     public interface IGraftWalletService : IWatchableService
     {
-        Task ProcessPayment(Payment payment, ApplicationDbContext db);
         Task ProcessExchange(Exchange exchange, ApplicationDbContext db);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ExchangeBroker.Data;
 using ExchangeBroker.Middleware;
 using ExchangeBroker.Services;
+using Graft.DAPI;
 using Graft.Infrastructure;
 using Graft.Infrastructure.Rate;
 using Graft.Infrastructure.Watcher;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReflectionIT.Mvc.Paging;
 using System;
+using WalletRpc;
 
 namespace ExchangeBroker
 {
@@ -44,12 +46,13 @@ namespace ExchangeBroker
             services.AddSingleton<IRateCache, RateCache>();
             services.AddSingleton<IEmailSender, EmailSender>();
             services.AddSingleton<IBitcoinService, BitcoinService>();
-            services.AddSingleton<IGraftWalletService, GraftWalletService>();
             services.AddSingleton<IEthereumService, EthereumService>();
             services.AddSingleton<ICryptoProviderService, CryptoProviderService>();
-
+            services.AddSingleton<GraftDapi>();
+            services.AddSingleton<WalletPool>();
+            
             services.AddScoped<IExchangeService, ExchangeService>();
-            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IExchangeToStableService, ExchangeToStableService>();
 
             services.AddHttpContextAccessor();
 
@@ -85,7 +88,7 @@ namespace ExchangeBroker
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ApplicationDbContext context,
             ILoggerFactory loggerFactory, WatcherService watcher, IEmailSender emailSender, IRateCache rateCache,
-            IBitcoinService bitcoinService, IGraftWalletService graftWalletService)
+            IBitcoinService bitcoinService)
         {
             if (env.IsDevelopment())
             {
@@ -119,7 +122,6 @@ namespace ExchangeBroker
             watcher.Add(rateCache);
             watcher.Add(emailSender);
             watcher.Add(bitcoinService);
-            watcher.Add(graftWalletService);
 
             // comment this line if you want to apply the migrations as a separate process
             context.Database.Migrate();
@@ -144,13 +146,6 @@ namespace ExchangeBroker
                 Convert.ToDecimal(Configuration["EthereumService:EthereumPoolDrainLimit"]));
 
             bitcoinService.Ping();
-
-            GraftWalletService.Init(context,
-                Configuration["GraftWalletService:RpcUrl"],
-                ConnectionString,
-                loggerFactory);
-
-
         }
     }
 }

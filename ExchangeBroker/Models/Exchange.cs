@@ -59,12 +59,26 @@ namespace ExchangeBroker.Models
 
         public decimal ReceivedAmount { get; set; }
 
-        public string BuyerTransactionId { get; set; }
 
-        public GraftTransactionStatus BuyerTransactionStatus { get; set; }
+        public string InTxId { get; set; }
+
+        public int InBlockNumber { get; internal set; }
+
+        public PaymentStatus InTxStatus { get; set; }
+
+        public string InTxStatusDescription { get; set; }
+
+
+        public string OutTxId { get; set; }
+
+        public int OutBlockNumber { get; internal set; }
+
+        public PaymentStatus OutTxStatus { get; set; }
+
+        public string OutTxStatusDescription { get; set; }
+
 
         [NotMapped]
         public List<EventItem> ProcessingEvents { get; set; }
-
     }
 }
