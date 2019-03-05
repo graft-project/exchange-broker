@@ -71,7 +71,7 @@ namespace ExchangeBroker.Services
 
             var exchange = new Exchange
             {
-                ExchangeId = model.ExchangeId ?? Guid.NewGuid().ToString(),
+                ExchangeId = model.PaymentId ?? Guid.NewGuid().ToString(),
                 CreatedAt = DateTime.UtcNow,
                 Status = PaymentStatus.Waiting,
 

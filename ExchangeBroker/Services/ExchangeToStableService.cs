@@ -38,9 +38,8 @@ namespace ExchangeBroker.Services
         readonly IRateCache _rateCache;
         readonly IMemoryCache _cache;
         readonly ICryptoProviderService _cryptoProviderService;
-        readonly GraftDapi _dapi;
-        readonly WalletPool _walletPool;
         readonly ExchangeServiceConfiguration _settings;
+        readonly GraftService _graft;
 
         public ExchangeToStableService(ILoggerFactory loggerFactory,
             ApplicationDbContext db,
@@ -48,8 +47,7 @@ namespace ExchangeBroker.Services
             IRateCache rateCache,
             IMemoryCache cache,
             ICryptoProviderService cryptoProviderService,
-            GraftDapi dapi,
-            WalletPool walletPool)
+            GraftService graft)
         {
             _settings = configuration
                .GetSection("ExchangeService")
@@ -60,8 +58,7 @@ namespace ExchangeBroker.Services
             _rateCache = rateCache;
             _cache = cache;
             _cryptoProviderService = cryptoProviderService;
-            _dapi = dapi;
-            _walletPool = walletPool;
+            _graft = graft;
         }
 
         public async Task<BrokerExchangeResult> Exchange(BrokerExchangeToStableParams model)
@@ -74,19 +71,18 @@ namespace ExchangeBroker.Services
             Exchange exchange = await ExchangeToStableCalculator.Create(model, _rateCache, _settings);
 
             // create new sale via DAPI
-            var dapiParams = new DapiSaleParams
-            {
-                PaymentId = Guid.NewGuid().ToString(),
-                Address = _settings.IncomeGraftWalletAddress,
-                Amount = GraftConvert.ToAtomicUnits(exchange.SellAmount)
-            };
-            var saleResult = await _dapi.Sale(dapiParams);
+            //var dapiParams = new DapiSaleParams
+            //{
+            //    PaymentId = Guid.NewGuid().ToString(),
+            //    Address = _settings.GraftWalletAddress,
+            //    Amount = GraftConvert.ToAtomicUnits(exchange.SellAmount)
+            //};
+            //var saleResult = await _graft.Sale(dapiParams);
 
-            // save payment params
-            exchange.InTxId = saleResult.PaymentId;
-            exchange.InBlockNumber = saleResult.BlockNumber;
+            exchange.InTxId = Guid.NewGuid().ToString();
+            exchange.InBlockNumber = await _graft.Sale(exchange.InTxId, exchange.SellAmount);
 
-            exchange.PayWalletAddress = _settings.IncomeGraftWalletAddress;
+            exchange.PayWalletAddress = _settings.GraftWalletAddress;
             exchange.Log($"{model.SellCurrency} address: {exchange.PayWalletAddress}");
 
             _cache.Set(exchange.ExchangeId, exchange, DateTimeOffset.Now.AddMinutes(_settings.PaymentTimeoutMinutes));
@@ -103,6 +99,45 @@ namespace ExchangeBroker.Services
         {
             _logger.LogInformation("ExchangeStatus: {@params}", exchangeId);
 
+            Exchange exchange = await GetExchange(exchangeId);
+
+            PaymentStatus status = await _graft.GetSaleStatus(exchange.InTxId, exchange.InBlockNumber);
+
+            //// sale_status -----------------------------------------
+            //var dapiStatusParams = new DapiSaleStatusParams
+            //{
+            //    PaymentId = exchange.InTxId,
+            //    BlockNumber = exchange.InBlockNumber
+            //};
+            //int count = 10;
+            //var saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
+            //while (saleStatusResult.Status < DapiSaleStatus.Success)
+            //{
+            //    saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
+            //    if (count-- < 0)
+            //        break;
+            //    await Task.Delay(1000);
+            //}
+
+            if (status >= PaymentStatus.Received && exchange.OutTxId == null)
+            {
+                await PayToServiceProvider(exchange);
+            }
+            else
+            {
+                exchange.Status = status;
+            }
+
+            _db.Exchange.Update(exchange);
+            await _db.SaveChangesAsync();
+
+            var res = GetExchangeResult(exchange);
+            _logger.LogInformation("ExchangeStatus Result: {@params}", res);
+            return res;
+        }
+
+        private async Task<Exchange> GetExchange(string exchangeId)
+        {
             if (string.IsNullOrEmpty(exchangeId))
                 throw new ApiException(ErrorCode.ExchangeIdEmpty);
 
@@ -114,37 +149,7 @@ namespace ExchangeBroker.Services
                     throw new ApiException(ErrorCode.ExchangeNotFoundOrExpired);
             }
 
-            // sale_status -----------------------------------------
-            var dapiStatusParams = new DapiSaleStatusParams
-            {
-                PaymentId = exchange.InTxId,
-                BlockNumber = exchange.InBlockNumber
-            };
-            int count = 10;
-            var saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
-            while (saleStatusResult.Status < DapiSaleStatus.Success)
-            {
-                saleStatusResult = await _dapi.GetSaleStatus(dapiStatusParams);
-                if (count-- < 0)
-                    break;
-                await Task.Delay(1000);
-            }
-
-            if (saleStatusResult.Status == DapiSaleStatus.Success && exchange.OutTxId == null)
-            {
-                await PayToServiceProvider(exchange);
-            }
-            else
-            {
-                exchange.Status = GraftDapi.DapiStatusToPaymentStatus(saleStatusResult.Status);
-            }
-
-            _db.Exchange.Update(exchange);
-            await _db.SaveChangesAsync();
-
-            var res = GetExchangeResult(exchange);
-            _logger.LogInformation("ExchangeStatus Result: {@params}", res);
-            return res;
+            return exchange;
         }
 
         async Task PayToServiceProvider(Exchange exchange)

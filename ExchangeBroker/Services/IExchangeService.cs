@@ -5,6 +5,7 @@ namespace ExchangeBroker.Services
 {
     public interface IExchangeService
     {
+        Task<BrokerExchangeResult> CalcExchange(BrokerExchangeParams model);
         Task<BrokerExchangeResult> Exchange(BrokerExchangeParams model);
         Task<BrokerExchangeResult> ExchangeStatus(string exchangeId);
     }

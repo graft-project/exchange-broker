@@ -2,7 +2,6 @@
 using ExchangeBroker.Extensions;
 using ExchangeBroker.Models;
 using ExchangeBroker.Models.Options;
-using Graft.DAPI;
 using Graft.Infrastructure;
 using Graft.Infrastructure.Broker;
 using Graft.Infrastructure.Rate;
@@ -11,9 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using WalletRpc;
 
 namespace ExchangeBroker.Services
 {
@@ -24,9 +21,8 @@ namespace ExchangeBroker.Services
         readonly IRateCache _rateCache;
         readonly IMemoryCache _cache;
         readonly ICryptoProviderService _cryptoProviderService;
-        readonly GraftDapi _dapi;
-        readonly WalletPool _walletPool;
         readonly ExchangeServiceConfiguration _settings;
+        readonly GraftService _graft;
 
         public ExchangeService(ILoggerFactory loggerFactory,
             ApplicationDbContext db,
@@ -34,8 +30,7 @@ namespace ExchangeBroker.Services
             IRateCache rateCache,
             IMemoryCache cache,
             ICryptoProviderService cryptoProviderService,
-            GraftDapi dapi,
-            WalletPool walletPool)
+            GraftService graft)
         {
             _settings = configuration
                .GetSection("ExchangeService")
@@ -46,12 +41,11 @@ namespace ExchangeBroker.Services
             _rateCache = rateCache;
             _cache = cache;
             _cryptoProviderService = cryptoProviderService;
-            _dapi = dapi;
-            _walletPool = walletPool;
+            _graft = graft;
         }
 
         // convert cryptocurrency payment to GRFT
-        public async Task<BrokerExchangeResult> Exchange(BrokerExchangeParams model)
+        public async Task<BrokerExchangeResult> CalcExchange(BrokerExchangeParams model)
         {
             _logger.LogInformation("Exchange: {@params}", model);
 
@@ -68,6 +62,32 @@ namespace ExchangeBroker.Services
             await _db.SaveChangesAsync();
 
             var res = GetExchangeResult(exchange);
+            _logger.LogInformation("Exchange Result: {@params}", res);
+            return res;
+        }
+
+        // convert cryptocurrency payment to GRFT
+        public async Task<BrokerExchangeResult> Exchange(BrokerExchangeParams model)
+        {
+            _logger.LogInformation("Exchange: {@params}", model);
+
+            ValidateExchangeParams(model);
+
+            Exchange exchange = await GetExchange(model.PaymentId);
+            exchange.OutTxId = model.PaymentId;
+            exchange.OutBlockNumber = model.BlockNumber;
+
+            //Exchange exchange = await ExchangeCalculator.Create(model, _rateCache, _settings);
+
+            //await _cryptoProviderService.CreateAddress(exchange);
+            //exchange.Log($"Created new {model.SellCurrency} address: {exchange.PayWalletAddress}");
+
+            //_cache.Set(exchange.ExchangeId, exchange, DateTimeOffset.Now.AddMinutes(_settings.PaymentTimeoutMinutes));
+
+            //_db.Exchange.Add(exchange);
+            //await _db.SaveChangesAsync();
+
+            var res = await ExchangeStatus(exchange.ExchangeId);
             _logger.LogInformation("Exchange Result: {@params}", res);
             return res;
         }
@@ -116,6 +136,45 @@ namespace ExchangeBroker.Services
         {
             _logger.LogInformation("ExchangeStatus: {@params}", exchangeId);
 
+            Exchange exchange = await GetExchange(exchangeId);
+
+            if (exchange.Status == PaymentStatus.Waiting)
+            {
+                if (await _cryptoProviderService.CheckExchange(exchange).ConfigureAwait(false))
+                {
+                    if (exchange.Status >= PaymentStatus.Received && exchange.OutTxStatus == PaymentStatus.New)
+                    {
+                        exchange.OutTxStatus = PaymentStatus.Fail;
+                        try
+                        {
+                            exchange.Log($"Received Payment of {exchange.ReceivedAmount} {exchange.SellCurrency}");
+
+                            // received amount can be different from initial amount, 
+                            // so we need to recalculate all amounts
+                            ExchangeCalculator.Recalc(exchange, _settings);
+
+                            exchange.OutTxStatus = await _graft.Pay(exchange.OutTxId, exchange.OutBlockNumber,
+                                exchange.BuyerWallet, exchange.BuyAmount);
+                        }
+                        catch (Exception ex)
+                        {
+                            exchange.OutTxStatus = PaymentStatus.Fail;
+                            exchange.OutTxStatusDescription = ex.Message;
+                        }
+
+                        _db.Exchange.Update(exchange);
+                        await _db.SaveChangesAsync();
+                    }
+                }
+            }
+
+            var res = GetExchangeResult(exchange);
+            _logger.LogInformation("ExchangeStatus Result: {@params}", res);
+            return res;
+        }
+
+        async Task<Exchange> GetExchange(string exchangeId)
+        {
             if (string.IsNullOrEmpty(exchangeId))
                 throw new ApiException(ErrorCode.ExchangeIdEmpty);
 
@@ -127,31 +186,9 @@ namespace ExchangeBroker.Services
                     throw new ApiException(ErrorCode.ExchangeNotFoundOrExpired);
             }
 
-            if (exchange.OutTxId == null)
-            {
-                if (await _cryptoProviderService.CheckExchange(exchange).ConfigureAwait(false))
-                {
-                    if (exchange.Status == PaymentStatus.Received)
-                    {
-                        exchange.Log($"Received Payment of {exchange.ReceivedAmount} {exchange.SellCurrency}");
-
-                        // received amount can be different from initial amount, 
-                        // so we need to recalculate all amounts
-                        ExchangeCalculator.Recalc(exchange, _settings);
-
-                        await PayToServiceProvider(exchange);
-                    }
-
-                    _db.Exchange.Update(exchange);
-                    await _db.SaveChangesAsync();
-                }
-            }
-
-            var res = GetExchangeResult(exchange);
-            _logger.LogInformation("ExchangeStatus Result: {@params}", res);
-            return res;
+            return exchange;
         }
-
+        /*
         async Task PayToServiceProvider(Exchange exchange)
         {
             if (exchange.OutTxId != null)
@@ -249,7 +286,7 @@ namespace ExchangeBroker.Services
                 exchange.OutTxStatusDescription = ex.Message;
             }
         }
-
+        */
         BrokerExchangeResult GetExchangeResult(Exchange exchange)
         {
             var address = _cryptoProviderService.GetUri(exchange);

@@ -48,8 +48,7 @@ namespace ExchangeBroker
             services.AddSingleton<IBitcoinService, BitcoinService>();
             services.AddSingleton<IEthereumService, EthereumService>();
             services.AddSingleton<ICryptoProviderService, CryptoProviderService>();
-            services.AddSingleton<GraftDapi>();
-            services.AddSingleton<WalletPool>();
+            services.AddSingleton<GraftService>();
             
             services.AddScoped<IExchangeService, ExchangeService>();
             services.AddScoped<IExchangeToStableService, ExchangeToStableService>();

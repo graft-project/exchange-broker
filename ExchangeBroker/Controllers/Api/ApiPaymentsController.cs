@@ -34,6 +34,14 @@ namespace ExchangeBroker.Controllers.Api
         }
 
         [HttpPost]
+        [Route("CalcExchange")]
+        public async Task<IActionResult> CalcExchange([FromBody] BrokerExchangeParams model)
+        {
+            var res = await _exchangeService.CalcExchange(model);
+            return Ok(res);
+        }
+
+        [HttpPost]
         [Route("Exchange")]
         public async Task<IActionResult> Exchange([FromBody] BrokerExchangeParams model)
         {
