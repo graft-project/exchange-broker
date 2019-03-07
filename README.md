@@ -393,30 +393,30 @@ where:
 - **NetworkType** - (MainNet, PublicRTATestnet, PublicTestnet) Operational network. 
 - **BitcoinExtPubKeyString** - your desired Bitcoin wallet ext key to accept payments.
 
-8.6. **PaymentService** - settings for Exchange Broker:
+8.6. **ExchangeService** - settings for  Payout Broker:
 ```
- "PaymentService": {
+  "ExchangeService": {
+    "DapiUrl": "http://localhost:28690/dapi/v2.0/",
     "ExchangeBrokerFee": 0.0075,
-    "MaxServiceProviderFee": 0.2,
-    "PaymentTimeoutMinutes": 16
+    "PaymentTimeoutMinutes": 16,
+    "WalletUrl": "http://localhost:29817/",
+    "GraftWalletAddress": "F...",
+    "EthereumAddress": "0xAAAA",
+    "EthereumUrl": "https://ropsten.infura.io/",
+    "EthereumPrivatekey": "0xAAAA",
+    "StableCoinContractAddress": "0xAAAA"
   },
-```
-where:
+ ```
+ where:
+ 
+**DapiUrl** - GRAFT DAPI URL.
 
-- **ExchangeBrokerFee** - Fee for exchange operations.
-- **MaxServiceProviderFee** - Maximum fee that provider can charge for the transaction.
-- **PaymentTimeoutMinutes** - Value in minutes that describes the period where Graft node waits for new transactions before actually performing them.
+**GraftWalletAddress** – Graft Wallet address, which will receive money from the Payment Gateway and from which we will send money to the Payment Gateway  when accepting altcoins.
 
-8.7. **GraftWalletService** - settings for GraftWallet 
-```
-"GraftWalletService": {
-    "RpcUrl": "http://127.0.0.1:28982/"
-```
-where:
+**WalletUrl** – RPC address GRAFT Wallet.
 
-**RpcUrl** - Path to Graft RPC node.
+**EthereumAddress** – - ETH wallet address in the Ropsten test network. We tested with MetaMask (https://metamask.io/). 
 
->**_Note: your <graft-wallet-name> should contain funds to enable graft payouts_**
 
 ### 9. Run Exchange Broker:
 
