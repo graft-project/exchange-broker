@@ -73,6 +73,14 @@ namespace ExchangeBroker.Services
 
             ValidateExchangeParams(model);
 
+            if (model.PaymentId == null)
+            {
+                var calcRes = await CalcExchange(model);
+                model.PaymentId = calcRes.ExchangeId;
+
+                model.BlockNumber = await _graft.Sale(calcRes.ExchangeId, calcRes.BuyAmount);
+            }
+
             Exchange exchange = await GetExchange(model.PaymentId);
             exchange.OutTxId = model.PaymentId;
             exchange.OutBlockNumber = model.BlockNumber;

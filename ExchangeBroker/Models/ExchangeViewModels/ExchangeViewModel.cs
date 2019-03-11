@@ -64,10 +64,13 @@ namespace ExchangeBroker.Models.ExchangeViewModels
         [DisplayFormat(DataFormatString = "{0:N9}", ApplyFormatInEditMode = true)]
         public decimal ReceivedAmount { get; set; }
 
-        [Display(Name = "Buyer Transaction ID")]
-        public string BuyerTransactionId { get; set; }
+        [Display(Name = "Out Tx ID")]
+        public string OutTxId { get; set; }
 
-        [Display(Name = "Buyer Transaction Status")]
-        public PaymentStatus BuyerTransactionStatus { get; set; }
+        [Display(Name = "Out Tx Status")]
+        public PaymentStatus OutTxStatus { get; set; }
+
+        [Display(Name = "Out Tx Description")]
+        public string OutTxStatusDescription { get; set; }
     }
 }

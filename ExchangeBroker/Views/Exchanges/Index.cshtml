@@ -106,7 +106,10 @@
                 @Html.SortableHeaderFor(model => model.ReceivedAmount)
             </th>
             <th>
-                @Html.SortableHeaderFor(model => model.BuyerTransactionStatus)
+                @Html.SortableHeaderFor(model => model.OutTxStatus)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.OutTxStatusDescription)
             </th>
             <th></th>
         </tr>
@@ -114,56 +117,59 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CreatedAt)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Status)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SellAmount)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SellCurrency)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.BuyAmount)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.BuyCurrency)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SellToUsdRate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.GraftToUsdRate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ExchangeBrokerFee)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.BuyerWallet)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.PayWalletAddress)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.PayAddressIndex)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ReceivedConfirmations)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ReceivedAmount)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.BuyerTransactionStatus)
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.ExchangeId">Details</a>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SellAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SellCurrency)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BuyAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BuyCurrency)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SellToUsdRate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GraftToUsdRate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExchangeBrokerFee)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BuyerWallet)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PayWalletAddress)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PayAddressIndex)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReceivedConfirmations)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReceivedAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OutTxStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OutTxStatusDescription)
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.ExchangeId">Details</a>
+            </td>
+        </tr>
         }
     </tbody>
 </table>

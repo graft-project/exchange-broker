@@ -47,8 +47,9 @@ namespace ExchangeBroker.Controllers
                     PayAddressIndex = p.PayAddressIndex,
                     ReceivedConfirmations = p.ReceivedConfirmations,
                     ReceivedAmount = p.ReceivedAmount,
-                    BuyerTransactionId = p.OutTxId,
-                    BuyerTransactionStatus = p.OutTxStatus
+                    OutTxId = p.OutTxId,
+                    OutTxStatus = p.OutTxStatus,
+                    OutTxStatusDescription = p.OutTxStatusDescription
                 })
                 .AsQueryable();
 
@@ -59,7 +60,7 @@ namespace ExchangeBroker.Controllers
                 query = query.Where(p => p.Status == status);
 
             if (buyerTranStatus != null)
-                query = query.Where(p => p.BuyerTransactionStatus == buyerTranStatus);
+                query = query.Where(p => p.OutTxStatus == buyerTranStatus);
 
             if (fromDate != null)
                 query = query.Where(p => p.CreatedAt >= fromDate);
@@ -112,8 +113,8 @@ namespace ExchangeBroker.Controllers
                 PayAddressIndex = exchange.PayAddressIndex,
                 ReceivedConfirmations = exchange.ReceivedConfirmations,
                 ReceivedAmount = exchange.ReceivedAmount,
-                BuyerTransactionId = exchange.OutTxId,
-                BuyerTransactionStatus = exchange.OutTxStatus
+                OutTxId = exchange.OutTxId,
+                OutTxStatus = exchange.OutTxStatus
             });
         }
 
