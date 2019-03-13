@@ -68,9 +68,12 @@
                 dataType: "json",
                 success: function (recData)
                 {
-                    if (recData == "Received" && intervalID != -1) {
+                    if (recData < 0 && intervalID != -1) {
                         clearInterval(intervalID);
-
+                        window.location.href = '@Url.Action("StatusError", "DemoTerminalApp", new { exchangeId = Model.Item1.ExchangeId })';
+                    }
+                    else if (recData > 3 && intervalID != -1) {
+                        clearInterval(intervalID);
                         window.location.href = '@Url.Action("Success", "DemoTerminalApp")';
                     }
                 },

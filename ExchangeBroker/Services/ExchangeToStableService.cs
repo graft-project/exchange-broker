@@ -2,7 +2,6 @@
 using ExchangeBroker.Extensions;
 using ExchangeBroker.Models;
 using ExchangeBroker.Models.Options;
-using Graft.DAPI;
 using Graft.Infrastructure;
 using Graft.Infrastructure.Broker;
 using Graft.Infrastructure.Rate;
@@ -17,7 +16,6 @@ using Nethereum.Web3.Accounts;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
-using WalletRpc;
 
 namespace ExchangeBroker.Services
 {
@@ -70,15 +68,6 @@ namespace ExchangeBroker.Services
             // calculate exchange
             Exchange exchange = await ExchangeToStableCalculator.Create(model, _rateCache, _settings);
 
-            // create new sale via DAPI
-            //var dapiParams = new DapiSaleParams
-            //{
-            //    PaymentId = Guid.NewGuid().ToString(),
-            //    Address = _settings.GraftWalletAddress,
-            //    Amount = GraftConvert.ToAtomicUnits(exchange.SellAmount)
-            //};
-            //var saleResult = await _graft.Sale(dapiParams);
-
             exchange.InTxId = Guid.NewGuid().ToString();
             exchange.InBlockNumber = await _graft.Sale(exchange.InTxId, exchange.SellAmount);
 
@@ -123,10 +112,10 @@ namespace ExchangeBroker.Services
             {
                 await PayToServiceProvider(exchange);
             }
-            else
-            {
-                exchange.Status = status;
-            }
+            //else
+            //{
+            //    exchange.Status = status;
+            //}
 
             _db.Exchange.Update(exchange);
             await _db.SaveChangesAsync();
@@ -136,7 +125,7 @@ namespace ExchangeBroker.Services
             return res;
         }
 
-        private async Task<Exchange> GetExchange(string exchangeId)
+        async Task<Exchange> GetExchange(string exchangeId)
         {
             if (string.IsNullOrEmpty(exchangeId))
                 throw new ApiException(ErrorCode.ExchangeIdEmpty);
@@ -177,7 +166,7 @@ namespace ExchangeBroker.Services
 
                 var transactionHash = await transferHandler.SendRequestAsync(_settings.StableCoinContractAddress, transactionMessage);
 
-                exchange.Status = PaymentStatus.Received;
+                //exchange.Status = PaymentStatus.Received;
                 exchange.OutTxStatus = PaymentStatus.Confirmed;
                 exchange.OutTxId = transactionHash;
             }
@@ -194,7 +183,8 @@ namespace ExchangeBroker.Services
             return new BrokerExchangeResult()
             {
                 ExchangeId = exchange.ExchangeId,
-                Status = exchange.Status,
+                Status = (PaymentStatus)Math.Min((sbyte)exchange.InTxStatus, (sbyte)exchange.OutTxStatus),
+                //Status = exchange.ExchangeStatus,
 
                 SellCurrency = exchange.SellCurrency,
                 SellAmount = exchange.SellAmount,

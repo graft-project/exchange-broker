@@ -75,6 +75,7 @@ namespace ExchangeBroker.Services
 
             if (model.PaymentId == null)
             {
+                // for Demo payments
                 var calcRes = await CalcExchange(model);
                 model.PaymentId = calcRes.ExchangeId;
 
@@ -84,16 +85,6 @@ namespace ExchangeBroker.Services
             Exchange exchange = await GetExchange(model.PaymentId);
             exchange.OutTxId = model.PaymentId;
             exchange.OutBlockNumber = model.BlockNumber;
-
-            //Exchange exchange = await ExchangeCalculator.Create(model, _rateCache, _settings);
-
-            //await _cryptoProviderService.CreateAddress(exchange);
-            //exchange.Log($"Created new {model.SellCurrency} address: {exchange.PayWalletAddress}");
-
-            //_cache.Set(exchange.ExchangeId, exchange, DateTimeOffset.Now.AddMinutes(_settings.PaymentTimeoutMinutes));
-
-            //_db.Exchange.Add(exchange);
-            //await _db.SaveChangesAsync();
 
             var res = await ExchangeStatus(exchange.ExchangeId);
             _logger.LogInformation("Exchange Result: {@params}", res);
@@ -146,11 +137,11 @@ namespace ExchangeBroker.Services
 
             Exchange exchange = await GetExchange(exchangeId);
 
-            if (exchange.Status == PaymentStatus.Waiting)
+            if (exchange.InTxStatus == PaymentStatus.Waiting)
             {
                 if (await _cryptoProviderService.CheckExchange(exchange).ConfigureAwait(false))
                 {
-                    if (exchange.Status >= PaymentStatus.Received && exchange.OutTxStatus == PaymentStatus.New)
+                    if (exchange.InTxStatus >= PaymentStatus.Received && exchange.OutTxStatus == PaymentStatus.New)
                     {
                         exchange.OutTxStatus = PaymentStatus.Fail;
                         try
@@ -302,7 +293,13 @@ namespace ExchangeBroker.Services
             return new BrokerExchangeResult()
             {
                 ExchangeId = exchange.ExchangeId,
-                Status = exchange.Status,
+                Status = (PaymentStatus)Math.Min((sbyte)exchange.InTxStatus, (sbyte)exchange.OutTxStatus),
+
+                InTxStatus = exchange.InTxStatus,
+                InTxStatusDescription = exchange.InTxStatusDescription,
+
+                OutTxStatus = exchange.OutTxStatus,
+                OutTxStatusDescription = exchange.OutTxStatusDescription,
 
                 SellCurrency = exchange.SellCurrency,
                 SellAmount = exchange.SellAmount,

@@ -34,7 +34,7 @@ namespace ExchangeBroker.Controllers
                 {
                     ExchangeId = p.ExchangeId,
                     CreatedAt = p.CreatedAt,
-                    Status = p.Status,
+                    //Status = p.ExchangeStatus,
                     SellAmount = p.SellAmount,
                     SellCurrency = p.SellCurrency,
                     BuyAmount = p.BuyAmount,
@@ -47,6 +47,9 @@ namespace ExchangeBroker.Controllers
                     PayAddressIndex = p.PayAddressIndex,
                     ReceivedConfirmations = p.ReceivedConfirmations,
                     ReceivedAmount = p.ReceivedAmount,
+                    InTxId = p.InTxId,
+                    InTxStatus = p.InTxStatus,
+                    InTxStatusDescription = p.InTxStatusDescription,
                     OutTxId = p.OutTxId,
                     OutTxStatus = p.OutTxStatus,
                     OutTxStatusDescription = p.OutTxStatusDescription
@@ -57,7 +60,7 @@ namespace ExchangeBroker.Controllers
                 query = query.Where(p => p.PayWalletAddress.Contains(filter) || p.BuyerWallet.Contains(filter));
 
             if (status != null)
-                query = query.Where(p => p.Status == status);
+                query = query.Where(p => p.InTxStatus == status);
 
             if (buyerTranStatus != null)
                 query = query.Where(p => p.OutTxStatus == buyerTranStatus);
@@ -100,7 +103,7 @@ namespace ExchangeBroker.Controllers
             {
                 ExchangeId = exchange.ExchangeId,
                 CreatedAt = exchange.CreatedAt,
-                Status = exchange.Status,
+                //Status = exchange.ExchangeStatus,
                 SellAmount = exchange.SellAmount,
                 SellCurrency = exchange.SellCurrency,
                 BuyAmount = exchange.BuyAmount,
@@ -114,7 +117,11 @@ namespace ExchangeBroker.Controllers
                 ReceivedConfirmations = exchange.ReceivedConfirmations,
                 ReceivedAmount = exchange.ReceivedAmount,
                 OutTxId = exchange.OutTxId,
-                OutTxStatus = exchange.OutTxStatus
+                OutTxStatus = exchange.OutTxStatus,
+                OutTxStatusDescription = exchange.OutTxStatusDescription,
+                InTxId = exchange.InTxId,
+                InTxStatus = exchange.InTxStatus,
+                InTxStatusDescription = exchange.InTxStatusDescription
             });
         }
 

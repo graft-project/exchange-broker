@@ -1,13 +1,13 @@
-﻿using System;
+﻿using ExchangeBroker.Data;
+using ExchangeBroker.Models;
+using Graft.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ExchangeBroker.Data;
-using ExchangeBroker.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace ExchangeBroker.Controllers
 {
@@ -25,20 +25,10 @@ namespace ExchangeBroker.Controllers
         {
             ISearchModel model;
 
-            //if (variant != null && variant == "Payments")
-            //{
-            //    model = new SearchModelPayments
-            //    {
-            //        Data = await _context.Payment.ToListAsync()
-            //    };
-            //}
-            //else
-            //{
-                model = new SearchModelExchange
-                {
-                    Data = await _context.Exchange.ToListAsync()
-                };
-            //}
+            model = new SearchModelExchange
+            {
+                Data = await _context.Exchange.ToListAsync()
+            };
 
             return View(model);
         }
@@ -50,73 +40,58 @@ namespace ExchangeBroker.Controllers
 
         string ItemTypeTo { get; }
 
-        int GetStatusCount(Graft.Infrastructure.PaymentStatus status);
+        int GetStatusCount(PaymentStatus status);
 
-        int FailedCount
-        {
-            get;
-        }
+        int FailedCount { get; }
 
-        int InProgressCount
-        {
-            get;
-        }
+        int InProgressCount { get; }
 
-        int SuccessfulCount
-        {
-            get;
-        }
+        int SuccessfulCount { get; }
 
-        Dictionary<string, int> DataSortedByDays
-        {
-            get;
-        }
+        Dictionary<string, int> DataSortedByDays { get; }
 
-        Dictionary<string, int> DataSortedByPayment
-        {
-            get;
-        }
+        Dictionary<string, int> DataSortedByPayment { get; }
     }
 
     public class SearchModelExchange : ISearchModel
     {
         public string ItemTypeTo { get => "Exchanges"; }
 
-        public int GetStatusCount(Graft.Infrastructure.PaymentStatus status)
+        public int GetStatusCount(PaymentStatus status)
         {
-            return Data.Count(x => x.Status == status);
+            return Data.Count(x => x.InTxStatus == status);
         }
 
         public int FailedCount
         {
             get => Data.Count(x => new[]
             {
-                Graft.Infrastructure.PaymentStatus.TimedOut,
-                Graft.Infrastructure.PaymentStatus.RejectedByWallet,
-                Graft.Infrastructure.PaymentStatus.RejectedByPOS,
-                Graft.Infrastructure.PaymentStatus.NotEnoughAmount,
-                Graft.Infrastructure.PaymentStatus.Fail,
-                Graft.Infrastructure.PaymentStatus.DoubleSpend
-            }.Contains(x.Status));
+                PaymentStatus.TimedOut,
+                PaymentStatus.RejectedByWallet,
+                PaymentStatus.RejectedByPOS,
+                PaymentStatus.NotEnoughAmount,
+                PaymentStatus.Fail,
+                PaymentStatus.DoubleSpend
+            }.Contains(x.InTxStatus));
         }
 
         public int InProgressCount
         {
             get => Data.Count(x => new[]
             {
-                Graft.Infrastructure.PaymentStatus.InProgress,
-                Graft.Infrastructure.PaymentStatus.New,
-                Graft.Infrastructure.PaymentStatus.Waiting
-            }.Contains(x.Status));
+                PaymentStatus.InProgress,
+                PaymentStatus.New,
+                PaymentStatus.Waiting
+            }.Contains(x.InTxStatus));
         }
 
         public int SuccessfulCount
         {
             get => Data.Count(x => new[]
             {
-                Graft.Infrastructure.PaymentStatus.Received,
-                Graft.Infrastructure.PaymentStatus.Confirmed
-            }.Contains(x.Status));
+                PaymentStatus.Received,
+                PaymentStatus.Confirmed
+            }.Contains(x.InTxStatus));
         }
 
         public Dictionary<string, int> DataSortedByDays
@@ -133,60 +108,4 @@ namespace ExchangeBroker.Controllers
 
         public int TotalCount => Data.Count;
     }
-
-    //public class SearchModelPayments : ISearchModel
-    //{
-    //    public string ItemTypeTo { get => "Payments"; }
-
-    //    public int GetStatusCount(Graft.Infrastructure.PaymentStatus status)
-    //    {
-    //        return Data.Count(x => x.Status == status);
-    //    }
-
-    //    public int FailedCount
-    //    {
-    //        get => Data.Count(x => new[]
-    //        {
-    //            Graft.Infrastructure.PaymentStatus.TimedOut,
-    //            Graft.Infrastructure.PaymentStatus.RejectedByWallet,
-    //            Graft.Infrastructure.PaymentStatus.RejectedByPOS,
-    //            Graft.Infrastructure.PaymentStatus.NotEnoughAmount,
-    //            Graft.Infrastructure.PaymentStatus.Fail,
-    //            Graft.Infrastructure.PaymentStatus.DoubleSpend
-    //        }.Contains(x.Status));
-    //    }
-
-    //    public int InProgressCount
-    //    {
-    //        get => Data.Count(x => new[]
-    //        {
-    //            Graft.Infrastructure.PaymentStatus.InProgress,
-    //            Graft.Infrastructure.PaymentStatus.New,
-    //            Graft.Infrastructure.PaymentStatus.Waiting
-    //        }.Contains(x.Status));
-    //    }
-
-    //    public int SuccessfulCount
-    //    {
-    //        get => Data.Count(x => new[]
-    //        {
-    //            Graft.Infrastructure.PaymentStatus.Received,
-    //            Graft.Infrastructure.PaymentStatus.Confirmed
-    //        }.Contains(x.Status));
-    //    }
-
-    //    public Dictionary<string, int> DataSortedByDays
-    //    {
-    //        get => Data.GroupBy(x => x.CreatedAt.Date).ToDictionary(x => x.Key.ToShortDateString(), y => y.Count());
-    //    }
-
-    //    public Dictionary<string, int> DataSortedByPayment
-    //    {
-    //        get => Data.OrderBy(x => x.PayAmount).GroupBy(x => Math.Round(x.PayAmount, 5)).ToDictionary(x => $"{x.Key} BTC", y => y.Count());
-    //    }
-
-    //    //public List<Payment> Data { get; set; } = new List<Payment>();
-
-    //    public int TotalCount => Data.Count;
-    //}
 }

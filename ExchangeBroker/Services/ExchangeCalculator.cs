@@ -73,7 +73,7 @@ namespace ExchangeBroker.Services
             {
                 ExchangeId = model.PaymentId ?? Guid.NewGuid().ToString(),
                 CreatedAt = DateTime.UtcNow,
-                Status = PaymentStatus.Waiting,
+                //ExchangeStatus = PaymentStatus.Waiting,
 
                 SellAmount = sellAmount,
                 SellCurrency = model.SellCurrency,
@@ -88,6 +88,7 @@ namespace ExchangeBroker.Services
 
                 BuyerWallet = model.WalletAddress,
 
+                InTxStatus = PaymentStatus.Waiting,
                 OutTxStatus = PaymentStatus.New
             };
 

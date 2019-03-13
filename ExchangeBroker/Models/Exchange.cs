@@ -15,8 +15,8 @@ namespace ExchangeBroker.Models
         [Required]
         public DateTime CreatedAt { get; set; }
 
-        [Required]
-        public PaymentStatus Status { get; set; }
+        //[Required]
+        //public PaymentStatus ExchangeStatus { get; set; }
 
 
         [Required]

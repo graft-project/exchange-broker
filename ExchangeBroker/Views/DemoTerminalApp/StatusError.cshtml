@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Status Error";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="google" value="notranslate">
+    <title>Graft Terminal Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <link rel='stylesheet' href='~/css/style.css' type='text/css' media='all' />
+</head>
+<body>
+    <div class='maindisplay black'>
+
+        <div class='caption'>
+            Error
+        </div>
+
+        <div class='blacksection'>
+            <center>
+                <small>
+                    <br>
+                    In Tx: @ViewData["InTxStatus"] : @ViewData["InTxStatusDescription"]
+                    <br>
+                    <br>
+                    Out Tx: @ViewData["OutTxStatus"] : @ViewData["OutTxStatusDescription"]
+                    <br>
+                    <br>
+                    <a href="@Url.Action("SelectCurrency","DemoTerminalApp")"><button class="cancelbut">Close</button></a>
+                </small>
+            </center>
+        </div>
+    </div>
+
+</body>
+</html>
+

@@ -30,6 +30,9 @@
     <Content Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="Views\DemoTerminalApp\StatusError.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\DemoTerminalApp\SelectCurrency.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

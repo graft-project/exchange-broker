@@ -99,8 +99,7 @@ namespace ExchangeBroker.Controllers
         public async Task<IActionResult> GetExchangeStatus(string exchangeId)
         {
             var res = await _exchangeService.ExchangeStatus(exchangeId);
-           
-            return Json(res.Status.ToString());
+            return Json((int)res.Status);
         }
 
         public async Task<IActionResult> GetExchangeStatusMessage(string exchangeId = null)
@@ -135,6 +134,23 @@ namespace ExchangeBroker.Controllers
             }
 
             return Json("Initialized!");
+        }
+
+        public async Task<IActionResult> StatusError(string exchangeId = null)
+        {
+            var res = await _exchangeService.ExchangeStatus(exchangeId);
+            if (res != null)
+            {
+                ViewData["InTxStatus"] = $"{res.InTxStatus}";
+                ViewData["InTxStatusDescription"] = $"{res.InTxStatusDescription}";
+                ViewData["OutTxStatus"] = $"{res.OutTxStatus}";
+                ViewData["OutTxStatusDescription"] = $"{res.OutTxStatusDescription}";
+            }
+            else
+            {
+                ViewData["InTxStatus"] = $"Exchange not found";
+            }
+            return View();
         }
 
         internal async Task<BrokerExchangeResult> CreateExchange(BrokerExchangeParams model)

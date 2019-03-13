@@ -1,4 +1,5 @@
 ﻿using ExchangeBroker.Models;
+using Graft.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -44,9 +45,9 @@ namespace ExchangeBroker.Services
 
                 if(lastRecord.IsError == 1)
                 {
-                    if (exchange.Status != Graft.Infrastructure.PaymentStatus.Fail)
+                    if (exchange.InTxStatus != PaymentStatus.Fail)
                     {
-                        exchange.Status = Graft.Infrastructure.PaymentStatus.Fail;
+                        exchange.InTxStatus = PaymentStatus.Fail;
                         changed = true;
                     }
                 }
@@ -57,11 +58,11 @@ namespace ExchangeBroker.Services
                         addedValue = EthereumLib.Converter.AtomicToDecimal(val);
                     }
 
-                    if (exchange.Status != Graft.Infrastructure.PaymentStatus.Received ||
+                    if (exchange.InTxStatus != PaymentStatus.Received ||
                         exchange.ReceivedConfirmations != (int)lastRecord.Confirmations ||
                         exchange.ReceivedAmount != addedValue)
                     {
-                        exchange.Status = Graft.Infrastructure.PaymentStatus.Received;
+                        exchange.InTxStatus = PaymentStatus.Received;
                         exchange.ReceivedConfirmations = (int)lastRecord.Confirmations;
                         exchange.ReceivedAmount = addedValue;
                     }

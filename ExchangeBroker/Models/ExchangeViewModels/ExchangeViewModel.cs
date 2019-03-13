@@ -12,8 +12,8 @@ namespace ExchangeBroker.Models.ExchangeViewModels
         [Display(Name = "Date")]
         public DateTime CreatedAt { get; set; }
 
-        [Display(Name = "Status")]
-        public PaymentStatus Status { get; set; }
+        //[Display(Name = "Status")]
+        //public PaymentStatus Status { get; set; }
 
 
         [Display(Name = "Sell Amount")]
@@ -63,6 +63,17 @@ namespace ExchangeBroker.Models.ExchangeViewModels
         [Display(Name = "Received Amount")]
         [DisplayFormat(DataFormatString = "{0:N9}", ApplyFormatInEditMode = true)]
         public decimal ReceivedAmount { get; set; }
+
+
+        [Display(Name = "In Tx ID")]
+        public string InTxId { get; set; }
+
+        [Display(Name = "In Tx Status")]
+        public PaymentStatus InTxStatus { get; set; }
+
+        [Display(Name = "In Tx Description")]
+        public string InTxStatusDescription { get; set; }
+
 
         [Display(Name = "Out Tx ID")]
         public string OutTxId { get; set; }

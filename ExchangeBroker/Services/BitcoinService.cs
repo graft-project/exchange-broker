@@ -102,11 +102,11 @@ namespace ExchangeBroker.Services
                 if (status.Status == TransactionStatus.DoubleSpent)
                     newStatus = PaymentStatus.DoubleSpend;
 
-                if (exchange.Status != newStatus ||
+                if (exchange.InTxStatus != newStatus ||
                     exchange.ReceivedConfirmations != status.Confirmations ||
                     exchange.ReceivedAmount != receivedAmount)
                 {
-                    exchange.Status = newStatus;
+                    exchange.InTxStatus = newStatus;
                     exchange.ReceivedConfirmations = status.Confirmations;
                     exchange.ReceivedAmount = receivedAmount;
                     changed = true;

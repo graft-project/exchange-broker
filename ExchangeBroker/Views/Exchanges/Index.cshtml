@@ -67,9 +67,6 @@
                 @Html.SortableHeaderFor(model => model.CreatedAt)
             </th>
             <th>
-                @Html.SortableHeaderFor(model => model.Status)
-            </th>
-            <th>
                 @Html.SortableHeaderFor(model => model.SellAmount)
             </th>
             <th>
@@ -106,6 +103,12 @@
                 @Html.SortableHeaderFor(model => model.ReceivedAmount)
             </th>
             <th>
+                @Html.SortableHeaderFor(model => model.InTxStatus)
+            </th>
+            <th>
+                @Html.SortableHeaderFor(model => model.InTxStatusDescription)
+            </th>
+            <th>
                 @Html.SortableHeaderFor(model => model.OutTxStatus)
             </th>
             <th>
@@ -120,9 +123,6 @@
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SellAmount)
@@ -159,6 +159,12 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.ReceivedAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InTxStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InTxStatusDescription)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.OutTxStatus)
